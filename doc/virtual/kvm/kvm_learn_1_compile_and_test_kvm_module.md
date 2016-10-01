@@ -65,4 +65,5 @@ KVM api version:12
 KVM recommended max_vcpus:160
 KVM maximum possible value of max_vcpus:255
 ```
+源码位置[kvm_api_test.c](https://github.com/ZhangShuaiyi/linux-summary/blob/master/src/virtual/kvm/kvm_api_test.c)
 
