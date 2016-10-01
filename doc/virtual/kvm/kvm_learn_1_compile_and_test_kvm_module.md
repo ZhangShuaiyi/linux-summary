@@ -57,4 +57,12 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 ```
+运行结果:
+```sh
+zsy@zsy-ThinkPad-X220:~/Workspace/code/linux-summary/src/virtual/kvm$ gcc kvm_api_test.c 
+zsy@zsy-ThinkPad-X220:~/Workspace/code/linux-summary/src/virtual/kvm$ ./a.out 
+KVM api version:12
+KVM recommended max_vcpus:160
+KVM maximum possible value of max_vcpus:255
+```
 
