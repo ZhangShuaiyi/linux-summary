@@ -14,6 +14,7 @@
 
 int main(int argc, char *argv[]) {
     int kvm, vmfd, vcpufd, ret;
+#if 0
     /* 输出al+bl的值 */
     const uint8_t code[] = {
         0xba, 0xf8, 0x03, /* mov $0x3f8,%dx */
@@ -24,10 +25,30 @@ int main(int argc, char *argv[]) {
         0xee,        /* out %al,(%dx) */
         0xf4,        /* hlt */
     };
+#endif
     uint8_t *mem;
     struct kvm_sregs sregs;
     size_t mmap_size;
     struct kvm_run *run;
+
+    FILE *fc;
+    uint8_t *code = NULL;
+    int code_len = 0;
+    if (argc!=2) {
+        fprintf(stderr, "Parameter error, need machine code input!\n");
+        return 1;
+    }
+    fc = fopen(argv[1], "rb");
+    if (!fc) {
+        err_exit("fopen");
+    }
+    /* 获取文件内容长度 */
+    fseek(fc, 0L, SEEK_END);
+    code_len = ftell(fc);
+    fseek(fc, 0L, SEEK_SET);
+    code = (uint8_t *)malloc(code_len);
+    code_len = fread(code, 1, code_len, fc);
+    fclose(fc);
 
     kvm = open("/dev/kvm", O_RDWR|O_CLOEXEC);
     if (kvm==-1) {
@@ -62,11 +83,12 @@ int main(int argc, char *argv[]) {
         err_exit("allocation guest memory");
     }
     /* 将测试代码复制到这块内存 */
-    memcpy(mem, code, sizeof(code));
+    memcpy(mem, code, code_len);
+    free(code);
 
     struct kvm_userspace_memory_region region= {
         .slot = 0,
-        .guest_phys_addr= 0x1000,
+        .guest_phys_addr= 0x0,
         .memory_size = 0x1000,
         .userspace_addr = (uint64_t)mem,
     };
@@ -111,7 +133,7 @@ int main(int argc, char *argv[]) {
     }
 
     struct kvm_regs regs = {
-        .rip = 0x1000,
+        .rip = 0x0,
         .rax = 2,
         .rbx = 2,
         .rflags = 0x2,
@@ -131,12 +153,12 @@ int main(int argc, char *argv[]) {
             puts("KVM_EXIT_HLT");
             return 0;
         case KVM_EXIT_IO:
+            /* fprintf(stdout, "\nKVM_EXIT_IO size:%d port:0x%x count:%d\n", run->io.size, run->io.port, run->io.count); */
             /* 因为IO退出虚机*/
             if (run->io.direction==KVM_EXIT_IO_OUT && run->io.size==1 && run->io.port==0x3f8 && run->io.count==1) {
                 putchar(*(((char *)run) + run->io.data_offset));
             } else {
                 fprintf(stderr, "unhandled KVM_EXIT_IO\n");
-                fprintf(stdout, "KVM_EXIT_IO size:%d port:0x%x count:%d\n", run->io.size, run->io.port, run->io.count);
                 return 1;
             }
             break;
