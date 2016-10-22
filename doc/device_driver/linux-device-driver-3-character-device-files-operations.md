@@ -1,3 +1,17 @@
+## linux设备驱动3--字符设备文件操作
+
+### 1. 文件操作
++ 声明file_operations
++ 使用cdev_init初始化cdev
++ 使用cdev_add将cdev添加到VFS
+
+### 2. 自动创建设备文件
++ 使用class_create创建class，创建后可以在/sys/class/下看到该class
++ 使用device_create创建设备文件
++ 在模块卸载时使用device_destroy和class_destroy删除自动创建的设备文件
+
+### 3. 驱动代码
+```c
 #include <linux/module.h>
 #include <linux/version.h>
 #include <linux/kernel.h>
@@ -105,3 +119,25 @@ MODULE_LICENSE("GPL");
 MODULE_AUTHOR("ZhangShuaiyi zhang_syi@163.com");
 MODULE_DESCRIPTION("Our first character driver with operations");
 MODULE_VERSION("0.2");
+```
+Makefile文件
+```
+obj-m := ofcd.o
+CFLAGS_ofcd.o += -DDEBUG
+CFLAGS_ofcd.o += -DCREATE_NODE
+
+all:
+	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
+clean:
+	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
+```
+
+### 4. 测试
+```sh
+$ sudo insmod ofcd.ko 
+$ ls -l /dev/ofcd0 
+crw------- 1 root root 242, 0 10月 22 16:40 /dev/ofcd0
+$ ls -l /sys/class/Shyi/
+total 0
+lrwxrwxrwx 1 root root 0 10月 22 16:41 ofcd0 -> ../../devices/virtual/Shyi/ofcd0
+```
