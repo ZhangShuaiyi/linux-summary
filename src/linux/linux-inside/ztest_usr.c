@@ -23,6 +23,10 @@ int main(int argc, char *argv[]) {
         perror("ztest ioctl list process");
     }
 
+    if (ioctl(fd, ZTEST_LIST_FILES, (unsigned long)0) == -1) {
+        perror("ztest ioctl list files");
+    }
+
     close(fd);
 
     exit(EXIT_SUCCESS);

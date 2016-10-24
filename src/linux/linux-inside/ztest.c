@@ -7,9 +7,11 @@
 #include <linux/errno.h>
 #include <linux/uaccess.h>
 #include <linux/sched.h>
+#include <linux/fdtable.h>
 
 #include "ztest_ioctl.h"
 
+#define FILE_NAME_LEN 256
 #define MINOR_CNT 1
 #define DEVICE_NAME "ztest"
 
@@ -27,11 +29,44 @@ static int my_close(struct inode *inodep, struct file *filep) {
 
 static long my_ioctl(struct file *filep, unsigned int cmd, unsigned long arg) {
     struct task_struct *task;
+    struct files_struct *current_files;
+    struct fdtable *file_table;
+    struct path file_path;
+    int i = 0;
+    char *cwd;
+    char buf[FILE_NAME_LEN] = {0};
 
     switch (cmd) {
     case ZTEST_LIST_PROCESS:
         for_each_process(task)
-            pr_info("%s [%d]\n", task->comm, task->pid);
+            pr_info("%s [%d] state:%lu\n", task->comm, task->pid, task->state);
+        break;
+    case ZTEST_LIST_FILES:
+        if (arg == 0) {
+            task = current;
+        } else {
+            task = pid_task(find_vpid(arg), PIDTYPE_PID);
+        }
+        current_files = task->files;
+        file_table = files_fdtable(current_files);
+        pr_debug("%s [%d] max_fds:%u\n", task->comm, task->pid, file_table->max_fds);
+#if 1
+        for (i=0; i<file_table->max_fds; i++) {
+            if (!file_table->fd[i]) {
+                continue;
+            }
+            file_path = file_table->fd[i]->f_path;
+            cwd = d_path(&file_path, buf, FILE_NAME_LEN);
+            pr_info("fd %d %s\n", i, cwd);
+        }
+#else
+        while (file_table->fd[i] != NULL) {
+            file_path = file_table->fd[i]->f_path;
+            cwd = d_path(&file_path, buf, FILE_NAME_LEN);
+            pr_info("fd %d %s\n", i, cwd);
+            i++;
+        }
+#endif
         break;
     default:
         return -EINVAL;

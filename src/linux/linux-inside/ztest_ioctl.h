@@ -4,6 +4,7 @@
 
 #define ZTESTIO 0x66
 
-#define ZTEST_LIST_PROCESS  _IO(ZTESTIO, 0)
+#define ZTEST_LIST_PROCESS  _IO(ZTESTIO, 0x00)
+#define ZTEST_LIST_FILES    _IO(ZTESTIO, 0x01)
 
 #endif
