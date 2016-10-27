@@ -2,6 +2,7 @@
 #include <pthread.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <sys/syscall.h>
 
 #define MAX_THREAD 10
 typedef struct {
@@ -11,11 +12,13 @@ typedef struct {
 
 static void *thread_func(void *arg) {
     thread_arg *this_arg = (thread_arg *)arg;
-    fprintf(stdout, "thread %lu enter pid:%u\n", pthread_self(), getpid());
+    pid_t pid = getpid();
+    pid_t tid = syscall(SYS_gettid);
+    fprintf(stdout, "thread %lu enter pid:%u tid:%u\n", pthread_self(), pid, tid);
     while (this_arg->running) {
         sleep(1);
     }
-    fprintf(stdout, "thread %lu exit pidL%u\n", pthread_self(), getpid());
+    fprintf(stdout, "thread %lu exit pid%u tid:%u\n", pthread_self(), pid, tid);
 }
 
 int main(int argc, char *argv[]) {
