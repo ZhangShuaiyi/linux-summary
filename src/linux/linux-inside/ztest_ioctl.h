@@ -6,5 +6,6 @@
 
 #define ZTEST_LIST_PROCESS  _IO(ZTESTIO, 0x00)
 #define ZTEST_LIST_FILES    _IO(ZTESTIO, 0x01)
+#define ZTEST_GET_THREAD    _IO(ZTESTIO, 0x02)
 
 #endif

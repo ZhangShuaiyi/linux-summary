@@ -27,6 +27,14 @@ static int my_close(struct inode *inodep, struct file *filep) {
     return 0;
 }
 
+static void my_get_current_thread_info(void) {
+    struct thread_info *info;
+    info = current_thread_info();
+    pr_info("task_struct task in thread_info:%p\n", info->task);
+    pr_info("current task_struct:%p\n", current);
+    pr_info("current cpu:%u\n", info->cpu);
+}
+
 static long my_ioctl(struct file *filep, unsigned int cmd, unsigned long arg) {
     struct task_struct *task;
     struct files_struct *current_files;
@@ -67,6 +75,9 @@ static long my_ioctl(struct file *filep, unsigned int cmd, unsigned long arg) {
             i++;
         }
 #endif
+        break;
+    case ZTEST_GET_THREAD:
+        my_get_current_thread_info();
         break;
     default:
         return -EINVAL;

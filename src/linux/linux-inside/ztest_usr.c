@@ -27,6 +27,9 @@ int main(int argc, char *argv[]) {
         perror("ztest ioctl list files");
     }
 
+    if (ioctl(fd, ZTEST_GET_THREAD, (unsigned long)0) == -1) {
+        perror("ztest get thread");
+    }
     close(fd);
 
     exit(EXIT_SUCCESS);
