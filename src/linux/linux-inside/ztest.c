@@ -33,6 +33,7 @@ static void my_get_current_thread_info(void) {
     pr_info("task_struct task in thread_info:%p\n", info->task);
     pr_info("current task_struct:%p\n", current);
     pr_info("current cpu:%u\n", info->cpu);
+    pr_info("pid:%d\n", info->task->pid);
 }
 
 static long my_ioctl(struct file *filep, unsigned int cmd, unsigned long arg) {
