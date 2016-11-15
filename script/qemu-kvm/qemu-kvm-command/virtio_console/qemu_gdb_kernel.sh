@@ -9,4 +9,5 @@
         -chardev socket,id=charchannel0,path=/tmp/serial,server,nowait \
         -device virtserialport,bus=virtio-serial0.0,nr=1,chardev=charchannel0,id=channel0,name=com.redhat.spice.0 \
         -append "root=/dev/mapper/ubuntu--vg-root console=ttyS0" \
+        -serial unix:/tmp/ztty,server,nowait \
         2>>/tmp/qemu.log
