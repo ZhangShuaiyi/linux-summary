@@ -1,0 +1,10 @@
+probe begin
+{
+    printf("begin probe tun\n")
+}
+
+probe kernel.function("tun_chr_write_iter")
+{
+    printf("%s %d -> %s iov_iter count:%d iov_base:%p iov_len:%d\n",
+           execname(), pid(), ppfunc(), $from->count, $from->iov->iov_base, $from->iov->iov_len)
+}

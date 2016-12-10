@@ -6,7 +6,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#define MAXLEN 8
+#define MAXLEN 10240
 #define PORT 6667
 
 int main(int argc, char *argv[]) {

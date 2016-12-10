@@ -1,0 +1,9 @@
+probe begin
+{
+    printf("probe sys_clone\n")
+}
+
+probe kernel.function("sys_clone")
+{
+    printf("%s %d\n", execname(), pid())
+}

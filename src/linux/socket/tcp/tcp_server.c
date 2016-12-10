@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#define MAXLEN 4096
+#define MAXLEN 10240
 #define MAX_EVENTS 10
 #define PORT 6667
 
@@ -18,8 +18,7 @@ static int do_use_fd(int fd) {
     /* net/socket.c SYSCALL_DEFINE4(recv, int, fd, ...) */
     n = recv(fd, buf, MAXLEN, 0);
     if (n) {
-        buf[n] = '\0';
-        fprintf(stdout, "recv from %d len:%d msg:%s\n", fd, n, buf);
+        fprintf(stdout, "recv from %d len:%d\n", fd, n);
     }
     return n;
 }
