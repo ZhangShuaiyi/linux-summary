@@ -82,11 +82,14 @@ static long my_ioctl(struct file *filep, unsigned int cmd, unsigned long arg) {
         pr_info("my_ioctl pid:%u addr:0x%llx\n", zpage.pid, zpage.addr);
         task = pid_task(find_vpid(zpage.pid), PIDTYPE_PID);
         page = walk_task_page(task, zpage.addr);
+        pr_info("page flags:0x%lx _count:%d\n", page->flags, atomic_read(&page->_count));
         p = kmap(page);
         offset = zpage.addr & (PAGE_SIZE - 1);
         pr_info("offset:%lu\n", offset);
         r = *(int *)(p+offset);
         pr_info("p:0x%x\n", r);
+        /* change memory data */
+        *(int *)(p+offset) = 0x12345678;
         kunmap(page);
     }
     }

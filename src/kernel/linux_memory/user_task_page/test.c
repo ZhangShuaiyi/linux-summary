@@ -9,7 +9,11 @@ int main(int arg, char *argv[]) {
     fprintf(stdout, "getpid:%d\n", getpid());
     fprintf(stdout, "a addr:%p val:0x%x\n", &a, a);
     fprintf(stdout, "b addr:%p val:0x%x\n", &b, b);
-    fprintf(stdout, "Wait input to quit");
+    fprintf(stdout, "Wait input to continue\n");
+    getchar();
+    fprintf(stdout, "a addr:%p val:0x%x\n", &a, a);
+    fprintf(stdout, "b addr:%p val:0x%x\n", &b, b);
+    fprintf(stdout, "Wait input to quit\n");
     getchar();
     exit(EXIT_SUCCESS);
 }
