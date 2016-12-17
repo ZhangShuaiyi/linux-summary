@@ -106,7 +106,7 @@ static int task_get_addr_region(struct task_struct *task, void *buf, unsigned lo
     offset = start & (PAGE_SIZE - 1);
     r = end - start;
     p = kmap(page);
-    for (i = 0; i < r; i++) {
+    for (i = 0; i <= r; i++) {
         *(char *)(buf + i) = *(char *)(p + offset + i);
     }
     kunmap(page);

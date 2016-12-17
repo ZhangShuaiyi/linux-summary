@@ -118,7 +118,7 @@ int main(int argc, char *argv[]) {
             ioctl_ret("ZPAGE_GET_ADDR_REGION", ret);
             if (c == 'b') {
                 for (i = 0; i <= ret; i++) {
-                    fprintf(stdout, "0x%x ", *(char *)(mmap_addr +  i));
+                    fprintf(stdout, "0x%x ", *(unsigned char *)(mmap_addr +  i));
                 }
             } else {
                 for (i = 0; i <= ret; i++) {
