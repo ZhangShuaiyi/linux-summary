@@ -89,21 +89,47 @@ static int my_mmap(struct file *filep, struct vm_area_struct *vma) {
 static long my_ioctl(struct file *filep, unsigned int cmd, unsigned long arg) {
     int r;
     void __user *argp = (void __user *)arg;
+    struct task_struct *task;
 
     r = -EFAULT;
     switch (cmd) {
     case ZPAGE_GET_MM_INFO: {
-        struct task_struct *task;
+        struct mm_struct *mm = NULL;
         task = pid_task(find_vpid(arg), PIDTYPE_PID);
         if (!task) {
             goto out;
         }
-        r = snprintf(mmap_data, MMAP_LEN, "start_stack:0x%lx\n", task->mm->start_stack);
+        r = 0;
+        mm = task->mm;
+        r += snprintf(mmap_data + r, MMAP_LEN - r, "start_stack:0x%lx\n", mm->start_stack);
+        r += snprintf(mmap_data + r, MMAP_LEN - r, "start_code:0x%lx end_code:0x%lx\n",
+                      mm->start_code, mm->end_code);
+        r += snprintf(mmap_data + r, MMAP_LEN - r, "start_data:0x%lx end_data:0x%lx\n",
+                      mm->start_data, mm->end_data);
+        r += snprintf(mmap_data + r, MMAP_LEN - r, "total_vm:%lu arg_start:0x%lx arg_end:0x%lx\n",
+                      mm->total_vm, mm->arg_start, mm->arg_end);
+        *(char *)(mmap_data + r) = '\0';
+        break;
+    }
+    case ZPAGE_GET_VMA_INFO: {
+        struct mm_struct *mm = NULL;
+        struct vm_area_struct *vma;
+        task = pid_task(find_vpid(arg), PIDTYPE_PID);
+        if (!task) {
+            goto out;
+        }
+        r = 0;
+        mm = task->mm;
+        r += snprintf(mmap_data + r, MMAP_LEN - r, "map_count:%d\n", mm->map_count);
+        for (vma = mm->mmap; vma; vma = vma->vm_next) {
+            r += snprintf(mmap_data + r, MMAP_LEN - r, "vma start:0x%lx end:0x%lx\n",
+                          vma->vm_start, vma->vm_end);
+        }
+        *(char *)(mmap_data + r) = '\0';
         break;
     }
     case ZPAGE_GET_PID_ADDR: {
         struct zpage_region zpage;
-        struct task_struct *task;
         struct page *page;
         void *p;
         unsigned long offset;

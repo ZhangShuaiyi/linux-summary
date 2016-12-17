@@ -13,5 +13,6 @@ struct zpage_region {
 
 #define ZPAGE_GET_PID_ADDR _IOW('z', 0x10, struct zpage_region)
 #define ZPAGE_GET_MM_INFO  _IO('z', 0x11)
+#define ZPAGE_GET_VMA_INFO _IO('z', 0x12)
 
 #endif

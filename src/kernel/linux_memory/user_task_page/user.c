@@ -13,6 +13,7 @@
 static void usage() {
     fprintf(stdout, "\tt: test\n"
             "\ti: get mm_struct info\n"
+            "\tv: get mm_struct vma info\n"
             "\th: this info\n"
             "\tq: quit\n");
 }
@@ -25,6 +26,14 @@ static void enter_pid(int *pid) {
 static void enter_addr(__u64 *addr) {
     fprintf(stdout, ">Enter addr:");
     scanf("%lx", addr);
+}
+
+static void ioctl_ret(char *str, int ret) {
+    fprintf(stdout, "ioctl %s ret:%d\n", str, ret);
+    if (ret == -1) {
+        perror("ioctl");
+        exit(EXIT_FAILURE);
+    }
 }
 
 int main(int argc, char *argv[]) {
@@ -58,22 +67,22 @@ int main(int argc, char *argv[]) {
             enter_pid(&zpage.pid);
             enter_addr(&zpage.addr);
             ret = ioctl(fd, ZPAGE_GET_PID_ADDR, &zpage);
-            if (ret == -1) {
-                perror("ioctl ZPAGE_GET_PID_ADDR");
-                exit(EXIT_FAILURE);
-            }
-            fprintf(stdout, "ioctl ZPAGE_GET_PID_ADDR ret:0x%x\n", ret);
+            ioctl_ret("ZPAGE_GET_PID_ADDR", ret);
             break;
         }
         case 'i': {
             int pid = 0;
             enter_pid(&pid);
             ret = ioctl(fd, ZPAGE_GET_MM_INFO, (long)pid);
-            if (ret == -1) {
-                perror("ioctl ZPAGE_GET_MM_INFO");
-                exit(EXIT_FAILURE);
-            }
-            fprintf(stdout, "ioctl ZPAGE_GET_MM_INFO ret:0x%x\n", ret);
+            ioctl_ret("ZPAGE_GET_MM_INFO", ret);
+            fprintf(stdout, "%s\n", mmap_addr);
+            break;
+        }
+        case 'v': {
+            int pid = 0;
+            enter_pid(&pid);
+            ret = ioctl(fd, ZPAGE_GET_VMA_INFO, (long)pid);
+            ioctl_ret("ZPAGE_GET_VMA_INFO", ret);
             fprintf(stdout, "%s\n", mmap_addr);
             break;
         }
