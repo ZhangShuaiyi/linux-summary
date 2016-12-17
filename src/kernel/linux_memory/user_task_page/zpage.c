@@ -58,6 +58,61 @@ out:
     return page;
 }
 
+static int task_get_args(struct task_struct *task, void *buf) {
+    int r = 0;
+    int i = 0;
+    struct page *page;
+    void *p;
+    unsigned long offset;
+
+    page = walk_task_page(task, task->mm->arg_start);
+    p = kmap(page);
+    offset = task->mm->arg_start & (PAGE_SIZE - 1);
+    for (i = 0; i <= task->mm->arg_end - task->mm->arg_start; i++) {
+        r += snprintf(buf + r, MMAP_LEN - r, "0x%0x ", *(unsigned char *)(p+offset+i));
+    }
+    *(char *)(buf + r) = '\0';
+    kunmap(page);
+    return r;
+}
+
+static int task_get_data(struct task_struct *task, void *buf) {
+    int r = 0;
+    int i = 0;
+    struct page *page;
+    void *p;
+    unsigned long offset;
+    struct mm_struct *mm = task->mm;
+
+    page = walk_task_page(task, mm->start_data);
+    offset = mm->start_data & (PAGE_SIZE - 1);
+    r = mm->end_data - mm->start_data;
+    p = kmap(page);
+    for (i = 0; i < r; i++) {
+        *(char *)(buf + i) = *(char *)(p + offset + i);
+    }
+    kunmap(page);
+    return r;
+}
+
+static int task_get_addr_region(struct task_struct *task, void *buf, unsigned long start, unsigned long end) {
+    int r = 0;
+    struct page *page;
+    void *p;
+    unsigned long offset;
+    int i = 0;
+
+    page = walk_task_page(task, start);
+    offset = start & (PAGE_SIZE - 1);
+    r = end - start;
+    p = kmap(page);
+    for (i = 0; i < r; i++) {
+        *(char *)(buf + i) = *(char *)(p + offset + i);
+    }
+    kunmap(page);
+    return r;
+}
+
 static int my_open(struct inode *inodep, struct file *filep) {
     return 0;
 }
@@ -126,6 +181,29 @@ static long my_ioctl(struct file *filep, unsigned int cmd, unsigned long arg) {
                           vma->vm_start, vma->vm_end);
         }
         *(char *)(mmap_data + r) = '\0';
+        break;
+    }
+    case ZPAGE_GET_PID_ARGS: {
+        task = pid_task(find_vpid(arg), PIDTYPE_PID);
+        if (!task) {
+            goto out;
+        }
+        r = task_get_args(task, mmap_data);
+        break;
+    }
+    case ZPAGE_GET_PID_DATA: {
+        task = pid_task(find_vpid(arg), PIDTYPE_PID);
+        r = task_get_data(task, mmap_data);
+        break;
+    }
+    case ZPAGE_GET_ADDR_REGION: {
+        struct zpage_addr_region addr_region;
+        if (copy_from_user(&addr_region, argp, sizeof(struct zpage_addr_region))) {
+            pr_err("my_ioctl copy_from_user error\n");
+            goto out;
+        }
+        task = pid_task(find_vpid(addr_region.pid), PIDTYPE_PID);
+        r = task_get_addr_region(task, mmap_data, addr_region.start_addr, addr_region.end_addr);
         break;
     }
     case ZPAGE_GET_PID_ADDR: {

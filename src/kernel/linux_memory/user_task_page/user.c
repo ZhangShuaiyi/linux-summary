@@ -14,6 +14,10 @@ static void usage() {
     fprintf(stdout, "\tt: test\n"
             "\ti: get mm_struct info\n"
             "\tv: get mm_struct vma info\n"
+            "\ta: get task args\n"
+            "\td: get task data\n"
+            "\tB: get data between addr print char\n"
+            "\tb: get data between addr\n"
             "\th: this info\n"
             "\tq: quit\n");
 }
@@ -39,6 +43,7 @@ static void ioctl_ret(char *str, int ret) {
 int main(int argc, char *argv[]) {
     int fd = 0;
     int ret = 0;
+    int pid = 0;
     char c;
     void *mmap_addr;
 
@@ -71,7 +76,6 @@ int main(int argc, char *argv[]) {
             break;
         }
         case 'i': {
-            int pid = 0;
             enter_pid(&pid);
             ret = ioctl(fd, ZPAGE_GET_MM_INFO, (long)pid);
             ioctl_ret("ZPAGE_GET_MM_INFO", ret);
@@ -79,11 +83,49 @@ int main(int argc, char *argv[]) {
             break;
         }
         case 'v': {
-            int pid = 0;
             enter_pid(&pid);
             ret = ioctl(fd, ZPAGE_GET_VMA_INFO, (long)pid);
             ioctl_ret("ZPAGE_GET_VMA_INFO", ret);
             fprintf(stdout, "%s\n", mmap_addr);
+            break;
+        }
+        case 'a': {
+            enter_pid(&pid);
+            ret = ioctl(fd, ZPAGE_GET_PID_ARGS, (long)pid);
+            ioctl_ret("ZPAGE_GET_PID_ARGS", ret);
+            fprintf(stdout, "%s\n", mmap_addr);
+            break;
+        }
+        case 'd': {
+            int i = 0;
+            enter_pid(&pid);
+            ret = ioctl(fd, ZPAGE_GET_PID_DATA, (long)pid);
+            ioctl_ret("ZPAGE_GET_PID_DATA", ret);
+            for (i = 0; i < ret; i++) {
+                fprintf(stdout, "0x%x", *(char *)(mmap_addr +  i));
+            }
+            fprintf(stdout, "\n");
+            break;
+        }
+        case 'B':
+        case 'b': {
+            int i = 0;
+            struct zpage_addr_region addr_region;
+            enter_pid(&addr_region.pid);
+            enter_addr(&addr_region.start_addr);
+            enter_addr(&addr_region.end_addr);
+            ret = ioctl(fd, ZPAGE_GET_ADDR_REGION, &addr_region);
+            ioctl_ret("ZPAGE_GET_ADDR_REGION", ret);
+            if (c == 'b') {
+                for (i = 0; i <= ret; i++) {
+                    fprintf(stdout, "0x%x ", *(char *)(mmap_addr +  i));
+                }
+            } else {
+                for (i = 0; i <= ret; i++) {
+                    fprintf(stdout, "%c", *(char *)(mmap_addr +  i));
+                }
+            }
+            fprintf(stdout, "\n");
             break;
         }
         case 'h':
