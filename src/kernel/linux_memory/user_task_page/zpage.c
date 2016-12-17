@@ -2,6 +2,7 @@
 #include <linux/kernel.h>
 #include <linux/fs.h>
 #include <linux/sched.h>
+#include <linux/slab.h>
 #include <linux/miscdevice.h>
 #include <asm/pgtable.h>
 #include <asm/uaccess.h>
@@ -11,6 +12,8 @@
 #include "zpage.h"
 
 #define DEV_NAME "zpage"
+
+static void *mmap_data;
 
 static struct page *walk_task_page(struct task_struct *task, unsigned long addr) {
     pgd_t *pgd;
@@ -63,6 +66,26 @@ static int my_close(struct inode *inodep, struct file *filep) {
     return 0;
 }
 
+static int my_mmap(struct file *filep, struct vm_area_struct *vma) {
+    unsigned long start = vma->vm_start;
+    unsigned long page;
+    size_t size = vma->vm_end - vma->vm_start;
+    pr_info("vma start:0x%lx size:%lu\n", start, size);
+
+    if (size>MMAP_LEN) {
+        return -EINVAL;
+    }
+    page = virt_to_phys(mmap_data) >> PAGE_SHIFT;
+    pr_info("In mmap virtual:%p, physical:0x%llx, pfn:%lu\n", mmap_data, virt_to_phys(mmap_data), page);
+
+    if (remap_pfn_range(vma, start, page, MMAP_LEN, PAGE_SHARED)) {
+        return -EAGAIN;
+    }
+    vma->vm_flags |= (VM_DONTEXPAND | VM_DONTDUMP);
+    return 0;
+}
+
+
 static long my_ioctl(struct file *filep, unsigned int cmd, unsigned long arg) {
     int r;
     void __user *argp = (void __user *)arg;
@@ -71,9 +94,11 @@ static long my_ioctl(struct file *filep, unsigned int cmd, unsigned long arg) {
     switch (cmd) {
     case ZPAGE_GET_MM_INFO: {
         struct task_struct *task;
-        r = 0;
         task = pid_task(find_vpid(arg), PIDTYPE_PID);
-        pr_info("start_stack:0x%lx\n", task->mm->start_stack);
+        if (!task) {
+            goto out;
+        }
+        r = snprintf(mmap_data, MMAP_LEN, "start_stack:0x%lx\n", task->mm->start_stack);
         break;
     }
     case ZPAGE_GET_PID_ADDR: {
@@ -114,7 +139,8 @@ static struct file_operations my_fops = {
     .owner = THIS_MODULE,
     .open = my_open,
     .release = my_close,
-    .unlocked_ioctl = my_ioctl
+    .unlocked_ioctl = my_ioctl,
+    .mmap = my_mmap
 };
 
 static struct miscdevice test_miscdevice = {
@@ -126,6 +152,7 @@ static int __init my_init(void) {
     pr_info("zpage init\n");
     test_miscdevice.name = DEV_NAME;
     misc_register(&test_miscdevice);
+    mmap_data = kzalloc(MMAP_LEN, GFP_KERNEL);
     return 0;
 }
 

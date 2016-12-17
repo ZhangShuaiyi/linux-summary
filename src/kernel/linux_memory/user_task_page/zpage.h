@@ -4,6 +4,8 @@
 #include <linux/types.h>
 #include <linux/ioctl.h>
 
+#define MMAP_LEN 4096
+
 struct zpage_region {
     __u32 pid;
     __u64 addr;

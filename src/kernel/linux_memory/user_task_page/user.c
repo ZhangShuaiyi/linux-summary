@@ -2,6 +2,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
+#include <sys/mman.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -30,10 +31,17 @@ int main(int argc, char *argv[]) {
     int fd = 0;
     int ret = 0;
     char c;
+    void *mmap_addr;
 
     fd = open(DEV_FILE, O_RDWR);
     if (fd == -1) {
         perror("open");
+        exit(EXIT_FAILURE);
+    }
+
+    mmap_addr = mmap(NULL, MMAP_LEN, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
+    if (mmap_addr == (void *)-1) {
+        perror("mmap");
         exit(EXIT_FAILURE);
     }
 
@@ -66,6 +74,7 @@ int main(int argc, char *argv[]) {
                 exit(EXIT_FAILURE);
             }
             fprintf(stdout, "ioctl ZPAGE_GET_MM_INFO ret:0x%x\n", ret);
+            fprintf(stdout, "%s\n", mmap_addr);
             break;
         }
         case 'h':
@@ -76,7 +85,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
-
+    munmap(mmap_addr, MMAP_LEN);
     close(fd);
     exit(EXIT_SUCCESS);
 }
