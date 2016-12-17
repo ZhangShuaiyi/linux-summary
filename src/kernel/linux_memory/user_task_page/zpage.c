@@ -6,6 +6,7 @@
 #include <asm/pgtable.h>
 #include <asm/uaccess.h>
 #include <linux/highmem.h>
+#include <linux/version.h>
 
 #include "zpage.h"
 
@@ -68,6 +69,13 @@ static long my_ioctl(struct file *filep, unsigned int cmd, unsigned long arg) {
 
     r = -EFAULT;
     switch (cmd) {
+    case ZPAGE_GET_MM_INFO: {
+        struct task_struct *task;
+        r = 0;
+        task = pid_task(find_vpid(arg), PIDTYPE_PID);
+        pr_info("start_stack:0x%lx\n", task->mm->start_stack);
+        break;
+    }
     case ZPAGE_GET_PID_ADDR: {
         struct zpage_region zpage;
         struct task_struct *task;
@@ -82,7 +90,11 @@ static long my_ioctl(struct file *filep, unsigned int cmd, unsigned long arg) {
         pr_info("my_ioctl pid:%u addr:0x%llx\n", zpage.pid, zpage.addr);
         task = pid_task(find_vpid(zpage.pid), PIDTYPE_PID);
         page = walk_task_page(task, zpage.addr);
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,8,0)
+        pr_info("page flags:0x%lx _count:%d\n", page->flags, atomic_read(&page->_mapcount));
+#else
         pr_info("page flags:0x%lx _count:%d\n", page->flags, atomic_read(&page->_count));
+#endif
         p = kmap(page);
         offset = zpage.addr & (PAGE_SIZE - 1);
         pr_info("offset:%lu\n", offset);
@@ -91,6 +103,7 @@ static long my_ioctl(struct file *filep, unsigned int cmd, unsigned long arg) {
         /* change memory data */
         *(int *)(p+offset) = 0x12345678;
         kunmap(page);
+        break;
     }
     }
 out:
