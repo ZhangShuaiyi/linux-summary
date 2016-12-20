@@ -1,0 +1,9 @@
+probe begin {
+    printf("begin submit_on\n")
+}
+
+probe kernel.function("submit_bio") {
+    printf("%s %d dev_t:0x%x MAJOR:%d MINOR:%d\n",
+           execname(), pid(), $bio->bi_bdev->bd_dev,
+           MAJOR($bio->bi_bdev->bd_dev), MINOR($bio->bi_bdev->bd_dev))
+}
