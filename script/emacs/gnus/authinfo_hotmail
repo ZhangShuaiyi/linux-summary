@@ -1,0 +1,2 @@
+machine smtp-mail.outlook.com login zhang_syi@hotmail.com password {password} port 587
+machine imap-mail.outlook.com login zhang_syi@hotmail.com password {password} port 993
