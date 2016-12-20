@@ -1,0 +1,16 @@
+/**
+ * printf $$parms$$ is large than 512, -DMAXSTRINGLEN=1024 to use 1024 bytes
+ * # stap -DMAXSTRINGLEN=1024 submit_bio_2.stp
+ */
+probe begin {
+    printf("begin submit_on\n")
+}
+
+probe kernel.function("submit_bio") {
+    major = MAJOR($bio->bi_bdev->bd_dev)
+    minor = MINOR($bio->bi_bdev->bd_dev)
+    if (major == 8) {
+        printf("%s dev_t:0x%x\n", execname(), $bio->bi_bdev->bd_dev)
+        printf("%s\n", $$parms$$)
+    }
+}
