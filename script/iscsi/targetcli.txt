@@ -1,0 +1,1 @@
+/iscsi/iqn.20...ccf74d06/tpg1> set attribute authentication=0 demo_mode_write_protect=0 generate_node_acls=1 cache_dynamic_acls=1
