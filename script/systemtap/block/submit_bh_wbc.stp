@@ -1,0 +1,15 @@
+probe begin {
+    printf("begin submit_bh_wbc\n")
+}
+
+probe kernel.function("submit_bh_wbc") {
+    major = MAJOR($bh->b_bdev->bd_dev)
+    minor = MINOR($bh->b_bdev->bd_dev)
+    /* dd of=/dev/sdb */
+    if (major == 8 && minor == 16) {
+        printf("%s %d\n", execname(), pid())
+        print_backtrace()
+        printf("b_size:%d\n", $bh->b_size)
+        printf("%s\n", kernel_string($bh->b_data))
+    }
+}
