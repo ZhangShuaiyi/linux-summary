@@ -1,0 +1,22 @@
+/**
+ * Print user-space stack
+ * # stap -d /usr/bin/dd --ldd  submit_bh_wbc_2.stp
+ */
+probe begin {
+    printf("begin submit_bh_wbc\n")
+}
+
+probe kernel.function("submit_bh_wbc") {
+    major = MAJOR($bh->b_bdev->bd_dev)
+    minor = MINOR($bh->b_bdev->bd_dev)
+    /* dd of=/dev/sdb */
+    if (major == 8 && minor == 16) {
+        printf("%s %d\n", execname(), pid())
+        printf("print_backtrace::::\n")
+        print_backtrace()
+        printf("print_ubacktrace:::\n")
+        print_ubacktrace()
+        printf("b_size:%d\n", $bh->b_size)
+        printf("%s\n", kernel_string($bh->b_data))
+    }
+}

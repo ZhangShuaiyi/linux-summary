@@ -1,0 +1,8 @@
+probe begin {
+    printf("probe iscsi_queuecommand")
+}
+
+probe module("libiscsi").function("iscsi_queuecommand") {
+    printf("%s %d\n", execname(), pid())
+    print_backtrace()
+}

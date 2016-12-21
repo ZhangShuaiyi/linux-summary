@@ -1,0 +1,12 @@
+probe begin {
+    printf("probe blk_queue_bio\n")
+}
+
+probe kernel.function("blk_queue_bio") {
+    major = MAJOR($bio->bi_bdev->bd_dev)
+    minor = MINOR($bio->bi_bdev->bd_dev)
+    if (major == 8 && minor == 16) {
+        printf("%s %d\n", execname(), pid())
+        print_backtrace()
+    }
+}
