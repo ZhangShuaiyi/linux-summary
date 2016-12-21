@@ -1,0 +1,15 @@
+probe begin {
+    printf("scsi_request_fn\n")
+}
+
+/**
+ * list statement and local variable
+ * # stap -L 'kernel.statement("scsi_request_fn@*:*")'
+ */
+probe kernel.statement("scsi_request_fn@drivers/scsi/scsi_lib.c:1692") {
+    if (substr(kernel_string($sdev->model), 0, 3) == "fd0") {
+        printf("%s\n", kernel_string($sdev->vendor))
+        printf("id:%d channel:%d\n", $sdev->id, $sdev->channel)
+        print_backtrace()
+    }
+}

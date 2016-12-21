@@ -1,5 +1,9 @@
+/**
+ * load all modules
+ * # stap --all-modules iscsi_queuecommand.stp
+ */
 probe begin {
-    printf("probe iscsi_queuecommand")
+    printf("probe iscsi_queuecommand\n")
 }
 
 probe module("libiscsi").function("iscsi_queuecommand") {
