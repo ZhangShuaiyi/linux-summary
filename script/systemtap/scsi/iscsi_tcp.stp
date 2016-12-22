@@ -1,0 +1,15 @@
+probe begin {
+    printf("probe iscsi tcp\n")
+}
+
+probe kernel.function("tcp_sendpage") {
+    printf("%s offset:%d size:%d\n", ppfunc(), $offset, $size)
+}
+
+probe kernel.statement("tcp_sendpage@net/ipv4/tcp.c:1013") {
+    printf("sock_no_sendpage\n")
+}
+
+probe kernel.statement("tcp_sendpage@net/ipv4/tcp.c:1018") {
+    printf("do_tcp_sendpages\n")
+}
