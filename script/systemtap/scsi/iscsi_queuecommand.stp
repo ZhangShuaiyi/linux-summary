@@ -7,6 +7,10 @@ probe begin {
 }
 
 probe module("libiscsi").function("iscsi_queuecommand") {
-    printf("%s %d\n", execname(), pid())
-    print_backtrace()
+    i = 0
+    printf("cmd_len:%d\t", $sc->cmd_len)
+    for (i = 0; i < $sc->cmd_len; i++) {
+        printf("0x%02x ", kernel_char($sc->cmnd + i) & 0xff)
+    }
+    printf("\n")
 }

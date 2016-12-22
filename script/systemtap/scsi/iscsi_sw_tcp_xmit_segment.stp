@@ -1,0 +1,18 @@
+probe begin {
+    printf("probe iscsi_sw_tcp_xmit_segment\n")
+}
+
+probe module("iscsi_tcp").statement("iscsi_sw_tcp_xmit_segment@drivers/scsi/iscsi_tcp.c:288") {
+    printf("sendpage offset:%d copy:%d\n", $offset, $copy)
+    /* printf("%s\n", $sk->sk->__sk_common$$) */
+    printf("saddr:%s sport:%d daddr:%s dport:%d\n",
+           ip_ntop($sk->sk->__sk_common->skc_rcv_saddr),
+           $sk->sk->__sk_common->skc_num,
+           ip_ntop($sk->sk->__sk_common->skc_daddr),
+           ntohs($sk->sk->__sk_common->skc_dport))
+    printf("sg page_link:0x%x offset:%d length:%d\n", $sg->page_link, $sg->offset, $sg->length)
+}
+
+probe module("iscsi_tcp").statement("iscsi_sw_tcp_xmit_segment@drivers/scsi/iscsi_tcp.c:297") {
+    printf("sendmsg copy:%d\n", $copy)
+}

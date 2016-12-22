@@ -1,0 +1,7 @@
+probe begin {
+    printf("probe __iscsi_conn_send_pdu\n")
+}
+
+probe module("libiscsi").function("__iscsi_conn_send_pdu") {
+    printf("opcode:%d data_size:%d\n", $hdr->opcode, $data_size)
+}

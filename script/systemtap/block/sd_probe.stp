@@ -1,0 +1,15 @@
+/**
+ * # stap --all-modules sd_probe.stp
+ */
+probe begin {
+    printf("probe sd_probe\n")
+}
+/**
+ * line 3103: error = device_add(&sdkp->dev);
+ * # stap -L 'kernel.statement("sd_probe@*:*")'
+ * kernel.statement("sd_probe@drivers/scsi/sd.c:3103") $dev:struct device* $sdp:struct scsi_device* $gd:struct gendisk* $index:int
+ */
+probe kernel.statement("sd_probe@drivers/scsi/sd.c:3103") {
+    printf("gd->disk_name:%s\n", kernel_string($gd->disk_name))
+    print_backtrace()
+}

@@ -1,0 +1,39 @@
+/**
+ * # stap --all-modules iscsi_sw_tcp_pdu.stp
+ */
+probe begin {
+    printf("iscsi_sw_tcp_pdu\n")
+}
+
+function ntoh24(dlength) {
+    return ((kernel_char(dlength) & 0xff) << 16) |
+    ((kernel_char(dlength + 1) & 0xff) << 8) |
+    (kernel_char(dlength + 2) & 0xff)
+}
+
+probe module("iscsi_tcp").function("iscsi_sw_tcp_pdu_alloc") {
+    printf("%s task:%p opcode:0x%x\n", ppfunc(), $task, $opcode)
+}
+
+probe module("iscsi_tcp").function("iscsi_sw_tcp_pdu_init") {
+    printf("%s task:%p count:%d\n", ppfunc(), $task, $count)
+}
+
+/**
+ * iscsi pdu: SCSI Command
+ * opcode = 0x01
+ * SCSI Command Descriptor Block (CDB): byte 32
+ */
+probe module("iscsi_tcp").function("iscsi_sw_tcp_pdu_xmit") {
+    printf("%s %d %s task:%p\n", execname(), pid(), ppfunc(), $task)
+    if ($task->hdr->opcode == 0x01) {
+        printf("hlength:%d dlength:%d cdb:0x%x\n",
+               $task->hdr->hlength,
+               ntoh24($task->hdr->dlength),
+               kernel_char($task->hdr + 32) & 0xff)
+        /* WRITE 10 */
+        if ((kernel_char($task->hdr + 32) & 0xff) == 0x2a) {
+            print_backtrace()
+        }
+    }
+}

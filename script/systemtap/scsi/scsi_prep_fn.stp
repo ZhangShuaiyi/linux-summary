@@ -1,0 +1,28 @@
+global fd0
+
+probe begin {
+    printf("probe scsi_prep_fn\n")
+}
+
+/* iscsi target backend name: fd0 */
+probe kernel.statement("scsi_prep_fn@drivers/scsi/scsi_lib.c:1304") {
+    if (substr(kernel_string($sdev->model), 0, 3) == "fd0") {
+        fd0 = $sdev
+        printf("%s\n", substr(kernel_string($sdev->model), 0, 3))
+    }
+}
+
+/* After scsi_prep_fn req->cmd contains scsi cdb */
+probe kernel.function("scsi_prep_fn").return {
+    if (fd0 == $q->queuedata) {
+        i = 0
+        printf("\tcmd_len:%d ", $req->cmd_len)
+        for (i = 0; i < $req->cmd_len; i++) {
+            printf("0x%x ", kernel_char($req->cmd + i))
+        }
+        printf("\n");
+        if (kernel_char($req->cmd) == 0x2a) {
+            print_backtrace()
+        }
+    }
+}
