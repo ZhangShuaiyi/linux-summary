@@ -1,0 +1,32 @@
+/**
+ * Use dd if=XXX of=/dev/sdb bs=4k count=1 to test
+ * # stap --all-modules -DMAXBACKTRACE=40 iscsi_tcp.stp
+ */
+probe begin {
+    printf("probe iscsi tcp\n")
+}
+
+/*
+probe kernel.function("tcp_sendpage") {
+    printf("%s offset:%d size:%d\n", ppfunc(), $offset, $size)
+}
+
+probe kernel.statement("tcp_sendpage@net/ipv4/tcp.c:1013") {
+    printf("sock_no_sendpage\n")
+}
+
+probe kernel.statement("tcp_sendpage@net/ipv4/tcp.c:1018") {
+    printf("do_tcp_sendpages\n")
+}
+*/
+
+/* initiator write tcp/ip send dport=3260 */
+probe kernel.function("loopback_xmit") {
+    len = $skb->len
+    dstport = ntohs($skb->sk->__sk_common->skc_dport)
+    if (len > 4096 && dstport == 3260) {
+        printf("%s len:%d dport:%d\n", ppfunc(), len, dstport)
+        printf("0x%x 0x%x\n", kernel_char($skb->data+100), kernel_char($skb->data+101))
+        print_backtrace()
+    }
+}
