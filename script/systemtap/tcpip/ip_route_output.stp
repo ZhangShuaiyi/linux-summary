@@ -1,0 +1,31 @@
+probe begin {
+    printf("probe ip route output\n")
+}
+
+probe kernel.function("__ip_route_output_key_hash") {
+    /* printf("%s %s\n", ppfunc(), $fl4$) */
+    saddr = ip_ntop($fl4->saddr)
+    daddr = ip_ntop($fl4->daddr)
+    printf("%s saddr:%s daddr:%s\n", ppfunc(), saddr, daddr)
+    if (daddr == "10.72.149.199") {
+        print_backtrace()
+    }
+}
+
+probe kernel.statement("__ip_route_output_key_hash@net/ipv4/route.c:*") {
+    printf("%s\n", pp())
+}
+
+probe kernel.function("__ip_route_output_key_hash").return {
+    printf("rtable rt_type:%d rt_is_input:%d gateway:%s\n",
+           $return->rt_type, $return->rt_is_input, ip_ntop($return->rt_gateway))
+}
+
+/*
+probe kernel.function("fib_table_lookup") {
+    saddr = ip_ntop($flp->saddr)
+    daddr = ip_ntop($flp->daddr)
+    printf("%s saddr:%s daddr:%s\n", ppfunc(), saddr, daddr)
+}
+*/
+

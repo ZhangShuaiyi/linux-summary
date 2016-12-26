@@ -5,10 +5,12 @@ probe begin {
 probe kernel.function("tcp_data_queue") {
     len = $skb->len;
     dport = ntohs($sk->__sk_common->skc_dport)
-    printf("%s len:%d dport:%d\n", ppfunc(), len, dport)
+    if (dport == 3260) {
+        printf("%s len:%d dport:%d\n", ppfunc(), len, dport)
+    }
 }
 
-/*
+
 probe kernel.statement("tcp_v4_rcv@net/ipv4/tcp_ipv4.c:1579") {
     dport = ntohs($th->dest)
     len = $skb->len
@@ -17,4 +19,4 @@ probe kernel.statement("tcp_v4_rcv@net/ipv4/tcp_ipv4.c:1579") {
         print_backtrace()
     }
 }
-*/
+

@@ -1,0 +1,108 @@
+probe begin {
+    printf("tcp connect lo\n")
+}
+
+/* probe before ip_route_connect */
+probe kernel.statement("tcp_v4_connect@net/ipv4/tcp_ipv4.c:169") {
+    srcaddr = ip_ntop($sk->__sk_common->skc_rcv_saddr)
+    dstaddr = ip_ntop($sk->__sk_common->skc_daddr)
+    printf("%s sport:%d dport:%d nexthop:%s srcaddr:%s dstaddr:%s\n",
+           pp(), ntohs($orig_sport), ntohs($orig_dport),
+           ip_ntop($nexthop), srcaddr, dstaddr)
+}
+
+
+/**
+ * probe after ip_route_connect
+ * probe before/after ip_route_newports
+ */
+probe kernel.statement("tcp_v4_connect@net/ipv4/tcp_ipv4.c:174"),
+kernel.statement("tcp_v4_connect@net/ipv4/tcp_ipv4.c:221"),
+kernel.statement("tcp_v4_connect@net/ipv4/tcp_ipv4.c:228") {
+    srcaddr = ip_ntop($sk->__sk_common->skc_rcv_saddr)
+    dstaddr = ip_ntop($sk->__sk_common->skc_daddr)
+    printf("%s srcaddr:%s dstaddr:%s sk_dst_cache:0x%x\n",
+           pp(), srcaddr, dstaddr, $sk->sk_dst_cache)
+}
+
+probe kernel.statement("tcp_connect") {
+    dstport = ntohs($sk->__sk_common->skc_dport)
+    if (dstport == 1234) {
+        printf("%s dport:%d sk_dst_cache:0x%x\n", ppfunc(), dstport, $sk->sk_dst_cache)
+    }
+}
+
+probe kernel.function("tcp_transmit_skb") {
+    dstport = ntohs($sk->__sk_common->skc_dport)
+    if (dstport == 1234) {
+        printf("%s dport:%d dev:0x%x _skb_refdst:0x%x\n", ppfunc(), dstport, $skb->dev, $skb->_skb_refdst)
+        if ($skb->dev) {
+            printf("%s dev name:%s\n", ppfunc(), kernel_string($skb->dev->name))
+        }
+    }
+}
+
+probe kernel.function("ip_queue_xmit") {
+    dstport = ntohs($sk->__sk_common->skc_dport)
+    if (dstport == 1234) {
+        printf("%s dport:%d dev:0x%x _skb_refdst:0x%x\n", ppfunc(), dstport, $skb->dev, $skb->_skb_refdst)
+        if ($skb->dev) {
+            printf("%s dev name:%s\n", ppfunc(), kernel_string($skb->dev->name))
+        }
+    }
+}
+
+probe kernel.statement("ip_queue_xmit@net/ipv4/ip_output.c:*") {
+    dstport = ntohs($sk->__sk_common->skc_dport)
+    if (dstport == 1234) {
+        printf("%s %s\n", ppfunc(), pp())
+    }
+}
+
+probe kernel.function("ip_route_output_flow").return {
+    dstport = ntohs($sk->__sk_common->skc_dport)
+    dstport2 = ntohs($flp4->uli->ports->dport)
+    if (dstport == 1234 || dstport2 == 1234) {
+        printf("%s dstport:%d dstport2:%d sk_dst_cache:0x%x rtable:0x%x\n",
+               ppfunc(), dstport, dstport2, $sk->sk_dst_cache, $return)
+        if ($return && $return->dst->dev) {
+            printf("%s dev name:%s\n", ppfunc(), kernel_string($return->dst->dev->name))
+        }
+        print_backtrace()
+    }
+}
+
+probe kernel.function("ip_local_out") {
+    dstport = ntohs($sk->__sk_common->skc_dport)
+    if (dstport == 1234) {
+        printf("%s dport:%d dev:0x%x _skb_refdst:0x%x\n", ppfunc(), dstport, $skb->dev, $skb->_skb_refdst)
+        if ($skb->dev) {
+            printf("%s dev name:%s\n", ppfunc(), kernel_string($skb->dev->name))
+        }
+    }
+}
+
+probe kernel.function("ip_finish_output") {
+    dstport = ntohs($sk->__sk_common->skc_dport)
+    if (dstport == 1234) {
+        printf("%s dport:%d dev:0x%x _skb_refdst:0x%x\n", ppfunc(), dstport, $skb->dev, $skb->_skb_refdst)
+        if ($skb->dev) {
+            printf("%s dev name:%s\n", ppfunc(), kernel_string($skb->dev->name))
+        }
+    }
+}
+
+/**
+ * test:
+ * $ nc -l 1234
+ * $ nc XXX.XXX.XXX.XXX 1234
+ */
+probe kernel.function("loopback_xmit") {
+    len = $skb->len
+    dstport = ntohs($skb->sk->__sk_common->skc_dport)
+    if (dstport == 1234) {
+        printf("%s len:%d dport:%d\n", ppfunc(), len, dstport)
+        print_backtrace()
+        exit()
+    }
+}
