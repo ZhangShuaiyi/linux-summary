@@ -1,0 +1,9 @@
+* perf record
+** call graph
+"perf record -g" and "perf report --stdio" to show call graph.
+#+BEGIN_SRC
+[zsy@localhost start]$ perf record -e cpu-clock -g ./foo
+[ perf record: Woken up 1 times to write data ]
+[ perf record: Captured and wrote 0.148 MB perf.data (1425 samples) ]
+[zsy@localhost start]$ perf report --stdio
+#+END_SRC

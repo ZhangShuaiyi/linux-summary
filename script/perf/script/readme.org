@@ -1,0 +1,6 @@
+* use perf script
+1. perf record -a -e raw_syscalls:sys_enter sleep 1
+2. perf script -g python
+3. mv perf-script.py syscall-counts.py
+4. change raw_syscalls__sys_enter function in syscall-counts.py
+5. perf script -s syscall-counts.py
