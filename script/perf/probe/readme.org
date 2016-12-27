@@ -1,0 +1,26 @@
+* perf probe
+** perf probe add
+1. list function:
+#+begin_src
+# perf probe -L tcp_sendmsg
+#+end_src
+2. list variable in function line:
+#+begin_src
+# perf probe -V tcp_sendmsg:28
+#+end_src
+3. add probe with variable
+#+begin_src
+# perf probe tcp_sendmsg:28 size
+#+end_src
+4. perf record
+#+begin_src
+# perf record -e probe:tcp_sendmsg -aR sleep 1
+#+end_src
+5. perf report will show variable
+#+begin_src
+# perf report
+#+end_src
+6. probe delete
+#+begin_src
+# perf probe --del="tcp_sendmsg"
+#+end_src
