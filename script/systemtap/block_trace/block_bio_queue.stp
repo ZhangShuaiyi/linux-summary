@@ -1,3 +1,23 @@
+/**
+ * # stap -g block_bio_queue.stp
+ */
+
+%{
+#include <linux/list.h>
+#include <linux/blkdev.h>
+%}    
+
+function list_request_queue:long (val:long) %{
+    struct request *req;
+    struct request_queue *q = (struct request_queue *)STAP_ARG_val;
+    STAP_RETVALUE = 0;
+
+    list_for_each_entry(req, &q->queue_head, queuelist) {
+        STAP_PRINTF("bio:%p\n", req->bio);
+        STAP_RETVALUE ++;
+    }
+%}
+
 probe begin {
     printf("probe trace block_bio_queue\n")
 }
@@ -6,8 +26,16 @@ probe kernel.trace("block_bio_queue") {
     dev_t = $bio->bi_bdev->bd_dev
     major = MAJOR(dev_t)
     minor = MINOR(dev_t)
+    bi_sector = $bio->bi_iter->bi_sector
+    bi_size = $bio->bi_iter->bi_size
+    // req_op defined in blk_types.h 0:REQ_OP_READ 1:REQ_OP_WRITE
+    req_op = $bio->bi_opf >> 29
+    // 0x8: REQ_SYNC
+    flag = $bio->bi_opf & 0x1fffffff
+    bi_vcnt = $bio->bi_vcnt
     if (major == 8 && minor == 16) {
-        printf("(%u, %u) sector:%d opf:0x%x comm:%s\n",
-               major, minor, $bio->bi_iter->bi_sector, $bio->bi_opf, execname())
+        printf("block_bio_queue (%u, %u) sector:%d size:%d option:0x%x flag:0x%x bi_vcnt:%d comm:%s\n",
+               major, minor, bi_sector, bi_size, req_op, flag, bi_vcnt, execname())
+        list_request_queue($q)
     }
 }
