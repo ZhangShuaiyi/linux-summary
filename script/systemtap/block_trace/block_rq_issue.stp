@@ -1,0 +1,45 @@
+/**
+ * # stap -g block_rq_issue.stp
+ */
+%{
+#include <linux/list.h>
+#include <linux/blkdev.h>
+#include <linux/kdev_t.h>
+%}
+
+function list_request_queue:long (val:long) %{
+    int bio_nums = 0;
+    struct bio *bio;
+    struct request *req;
+    struct request_queue *q = (struct request_queue *)STAP_ARG_val;
+    STAP_RETVALUE = 0;
+
+    list_for_each_entry(req, &q->queue_head, queuelist) {
+        STAP_RETVALUE ++;
+        STAP_PRINTF("\trequest:%p __sector:%d __data_len:%d bio:%p biotail:%p\n",
+                    req, req->__sector, req->__data_len, req->bio, req->biotail);
+        bio = req->bio;
+        while (bio) {
+            STAP_PRINTF("\t\tbio:%p (%u, %u) bi_sector:%lu bi_size:%d\n",
+                   bio, MAJOR(bio->bi_bdev->bd_dev), MINOR(bio->bi_bdev->bd_dev),
+                   bio->bi_iter.bi_sector, bio->bi_iter.bi_size);
+            bio_nums ++;
+            if (bio == req->biotail){
+                break;
+            }
+            bio = bio->bi_next;
+        }
+        STAP_PRINTF("\trequest:%p bio_nums:%d\n", req, bio_nums);
+    }
+%}
+
+probe begin {
+    printf("probe block_rq_issue\n")
+}
+
+probe kernel.trace("block_rq_issue") {
+    if (execname() == "dd" || execname() == "fio") {
+        printf("block_rq_issue request_queue:%p comm:%s\n", $q, execname())
+        list_request_queue($q)
+    }
+}
