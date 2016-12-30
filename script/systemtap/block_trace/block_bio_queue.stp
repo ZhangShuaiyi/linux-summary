@@ -13,10 +13,12 @@ function list_request_queue:long (val:long) %{
     STAP_RETVALUE = 0;
 
     list_for_each_entry(req, &q->queue_head, queuelist) {
-        STAP_PRINTF("bio:%p\n", req->bio);
+        STAP_PRINTF("\t\treq:%p bio:%p\n", req, req->bio);
         STAP_RETVALUE ++;
     }
 %}
+
+global queue
 
 probe begin {
     printf("probe trace block_bio_queue\n")
@@ -34,8 +36,42 @@ probe kernel.trace("block_bio_queue") {
     flag = $bio->bi_opf & 0x1fffffff
     bi_vcnt = $bio->bi_vcnt
     if (major == 8 && minor == 16) {
-        printf("block_bio_queue (%u, %u) sector:%d size:%d option:0x%x flag:0x%x bi_vcnt:%d comm:%s\n",
+        printf("block_bio_queue q:%p bio:%p\n", $q, $bio)
+        printf("\tblock_bio_queue (%u, %u) sector:%d size:%d option:0x%x flag:0x%x bi_vcnt:%d comm:%s\n",
                major, minor, bi_sector, bi_size, req_op, flag, bi_vcnt, execname())
+        queue = $q
         list_request_queue($q)
+    }
+}
+
+probe kernel.trace("block_getrq") {
+    if ($bio) {
+        dev_t = $bio->bi_bdev->bd_dev
+        major = MAJOR(dev_t)
+        minor = MINOR(dev_t)
+        if (major == 8 && minor == 16) {
+            printf("block_getrq q:%p bio:%p comm:%s\n", $q, $bio, execname())
+        }
+        list_request_queue($q)
+    }
+}
+
+probe kernel.trace("block_rq_insert") {
+    if ($q == queue) {
+        printf("block_rq_insert q:%p rq:%p bio:%p biotail:%p comm:%s\n",
+               $q, $rq, $rq->bio, $rq->biotail, execname())
+        printf("\tblock_rq_insert __sector:%d __data_len:%d\n", $rq->__sector, $rq->__data_len)
+        list_request_queue($q)
+    }
+}
+
+probe kernel.trace("block_rq_issue") {
+    if ($q == queue) {
+        printf("block_rq_issue q:%p rq:%p bio:%p biotail:%p comm:%s\n",
+               $q, $rq, $rq->bio, $rq->biotail, execname())
+        printf("\tblock_rq_issue request __sector:%d __data_len:%d\n", $rq->__sector, $rq->__data_len)
+        if ($rq->__sector >= 0) {
+            list_request_queue($q)
+        }
     }
 }
