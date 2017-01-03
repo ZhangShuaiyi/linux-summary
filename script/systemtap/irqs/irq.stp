@@ -1,0 +1,9 @@
+probe begin {
+    printf("probe irq\n")
+}
+
+probe softirq.entry {
+    if (vec_nr == 3) {
+        printf("%s vec_nr:%d\n", ppfunc(), vec_nr)
+    }
+}
