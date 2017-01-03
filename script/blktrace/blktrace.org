@@ -1,0 +1,5 @@
+* 1. blktrace
+1. blktrace -d /dev/sdb
+2. blkparse -i sdb -d sdb.bin -o sdbparse
+3. btt -i sdb.bin
+4. vi sdbparse

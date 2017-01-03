@@ -39,7 +39,7 @@ probe begin {
 
 probe kernel.trace("block_rq_issue") {
     if (execname() == "dd" || execname() == "fio") {
-        printf("block_rq_issue request_queue:%p comm:%s\n", $q, execname())
+        printf("block_rq_issue request_queue:%p request:%p comm:%s\n", $q, $rq, execname())
         list_request_queue($q)
     }
 }
