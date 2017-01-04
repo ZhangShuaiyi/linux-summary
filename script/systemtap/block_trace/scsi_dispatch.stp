@@ -1,0 +1,134 @@
+/**
+ * # stap -g block_rq_issue.stp
+ */
+%{
+#include <linux/list.h>
+#include <linux/blkdev.h>
+#include <linux/kdev_t.h>
+%}
+
+function list_request_queue:long (val:long) %{
+    int bio_nums = 0;
+    struct bio *bio;
+    struct request *req;
+    struct request_queue *q = (struct request_queue *)STAP_ARG_val;
+    int req_op, flag;
+    STAP_RETVALUE = 0;
+
+    list_for_each_entry(req, &q->queue_head, queuelist) {
+        STAP_RETVALUE ++;
+        STAP_PRINTF("\trequest:%p __sector:%d __data_len:%d bio:%p biotail:%p\n",
+                    req, req->__sector, req->__data_len, req->bio, req->biotail);
+        bio = req->bio;
+        // req_op defined in blk_types.h 0:REQ_OP_READ 1:REQ_OP_WRITE
+        req_op = bio->bi_opf >> 29;
+        // 0x8: REQ_SYNC
+        flag = bio->bi_opf & 0x1fffffff;
+        while (bio) {
+            STAP_PRINTF("\t\tbio:%p (%u, %u) bi_sector:%lu bi_size:%d operation:0x%x flag:0x%x\n",
+                   bio, MAJOR(bio->bi_bdev->bd_dev), MINOR(bio->bi_bdev->bd_dev),
+                        bio->bi_iter.bi_sector, bio->bi_iter.bi_size, req_op, flag);
+            bio_nums ++;
+            if (bio == req->biotail){
+                break;
+            }
+            bio = bio->bi_next;
+        }
+        STAP_PRINTF("\trequest:%p bio_nums:%d\n", req, bio_nums);
+    }
+%}
+
+function printf_array_len (addr, n) {
+    i = 0
+    printf("\tlen(%d):", n)
+    for (i = 0; i < n; i++) {
+        printf("0x%x ", kernel_char(addr + i) & 0xff)
+    }
+    printf("\n")
+}
+
+probe begin {
+    printf("probe block_rq_issue\n")
+}
+
+probe kernel.trace("block_bio_queue") {
+    major = MAJOR($bio->bi_bdev->bd_dev)
+    minor = MINOR($bio->bi_bdev->bd_dev)
+    if (major == 8 && minor == 16) {
+        printf("Q: block_bio_queue request_queue:%p bio:%p\n", $q, $bio)
+    }
+}
+
+probe kernel.trace("block_getrq") {
+    if ($bio && $bio->bi_bdev) {
+        major = MAJOR($bio->bi_bdev->bd_dev)
+        minor = MINOR($bio->bi_bdev->bd_dev)
+        if (major == 8 && minor == 16) {
+            printf("G: block_getrq request_queue:%p bio:%p comm:%s\n",
+                   $q, $bio, execname())
+        }
+    }
+}
+
+probe kernel.trace("block_bio_frontmerge"),
+kernel.trace("block_bio_backmerge") {
+    if ($bio && $bio->bi_bdev) {
+        major = MAJOR($bio->bi_bdev->bd_dev)
+        minor = MINOR($bio->bi_bdev->bd_dev)
+        if (major == 8 && minor == 16) {
+            printf("M/F block merget request_queue:%p request:%p sector:%d len:%d bio:%p comm:%s\n",
+                   $q, $rq, $rq->__sector, $rq->__data_len, $bio, execname())
+        }
+    }
+}
+
+probe kernel.trace("block_rq_insert") {
+    if ($rq->bio && $rq->bio->bi_bdev) {
+        major = MAJOR($rq->bio->bi_bdev->bd_dev)
+        minor = MINOR($rq->bio->bi_bdev->bd_dev)
+        if (major == 8 && minor == 16) {
+            printf("I: block_rq_insert request_queue:%p request:%p sector:%d len:%d\n", $q, $rq, $rq->__sector, $rq->__data_len)
+        }
+    }
+}
+
+probe kernel.trace("block_plug") {
+    printf("P: block_plug request_queue:%p dev_t:0x%x\n", $q, $q->dev->devt)
+}
+
+probe kernel.trace("block_unplug") {
+    printf("U: block_unplug request_queue:%p depth:%d explicit:%d\n", $q, $depth, $explicit)
+}
+
+probe kernel.trace("block_rq_issue") {
+    if ($rq->bio && $rq->bio->bi_bdev) {
+        major = MAJOR($rq->bio->bi_bdev->bd_dev)
+        minor = MINOR($rq->bio->bi_bdev->bd_dev)
+        if (major == 8 && minor == 16) {
+            printf("D: block_rq_issue request_queue:%p request:%p comm:%s\n", $q, $rq, execname())
+            list_request_queue($q)
+        }
+    }
+}
+
+probe kernel.trace("scsi_dispatch_cmd_start") {
+    if (substr(kernel_string($cmd->device->model), 0, 3) == "fd0") {
+        device = $cmd->device
+        printf("scsi_dispath_cmd_start scsi_device:%p queue_depth:%d sector_size:%d request_queue:%p\n",
+               device, device->queue_depth, device->sector_size, device->request_queue)
+        request = $cmd->request
+        printf("\trequest:%p bio:%p biotail:%p\n", request, request->bio, request->biotail)
+        printf_array_len($cmd->cmnd, $cmd->cmd_len)
+    }
+}
+
+probe kernel.trace("block_rq_complete") {
+    if ($rq->bio && $rq->bio->bi_bdev) {
+        major = MAJOR($rq->bio->bi_bdev->bd_dev)
+        minor = MINOR($rq->bio->bi_bdev->bd_dev)
+        if (major == 8 && minor == 16) {
+            printf("C: block_rq_complete request_queue:%p request:%p sector:%d len:%d nr_bytes:%d\n",
+                   $q, $rq, $rq->__sector, $rq->__data_len, $nr_bytes)
+        }
+    }
+}
