@@ -1,0 +1,10 @@
+/**
+ * # stap --all-modules virtio_scsi.stp --remote=root@192.168.122.15
+ */
+probe begin {
+    printf("begin probe virtio_scsi\n")
+}
+
+probe module("virtio_scsi").function("virtscsi_queuecommand") {
+    printf("virtio_queuecommand\n")
+}
