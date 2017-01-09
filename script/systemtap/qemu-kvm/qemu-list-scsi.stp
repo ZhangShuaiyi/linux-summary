@@ -1,7 +1,0 @@
-probe begin {
-    printf("begin test\n")
-}
-
-probe process("/usr/bin/qemu-system-x86_64").function("virtio_scsi_*") {
-    printf("%s\n", ppfunc())
-}
