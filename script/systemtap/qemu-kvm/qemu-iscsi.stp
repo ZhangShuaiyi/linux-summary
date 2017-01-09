@@ -1,3 +1,6 @@
+/**
+ * # stap --ldd qemu-iscsi.stp
+ */
 probe begin {
     printf("begin probe qemu iscsi\n")
 }
@@ -13,6 +16,7 @@ probe process("/usr/bin/qemu-system-x86_64").function("virtio_scsi_command_compl
 
 probe process("/usr/bin/qemu-system-x86_64").function("iscsi_co_writev_flags") {
     printf("iscsi_co_writev_flags sector_num:%d nb_sectors:%d\n", $sector_num, $nb_sectors)
+    print_ubacktrace()
 }
 
 probe process("/usr/bin/qemu-system-x86_64").function("iscsi_co_pwrite_zeroes") {
