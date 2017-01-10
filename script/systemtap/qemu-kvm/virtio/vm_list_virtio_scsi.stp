@@ -1,0 +1,20 @@
+/**
+ * # stap --all-modules vm_list_virtio_scsi.stp --remote=192.168.122.15 | tee -a vm_list-out.txt
+ */
+probe begin {
+    printf("begin probe vm virtio scsi\n")
+}
+
+probe module("virtio*").function("virtio_*").call,
+    module("virtio*").function("virtscsi_*").call,
+    module("virtio*").function("virtqueue_*").call,
+    module("virtio*").function("vring_*").call {
+    printf("%s -> %s\n", thread_indent(1), ppfunc())
+}
+
+probe module("virtio*").function("virtio_*").return,
+    module("virtio*").function("virtscsi_*").return,
+    module("virtio*").function("virtqueue_*").return,
+    module("virtio*").function("vring_*").return {
+    printf("%s <- %s\n", thread_indent(-1), ppfunc())
+}
