@@ -1,0 +1,50 @@
+/**
+ * kernel version: 4.8.14-300.fc25.x86_64
+ */
+probe begin {
+    printf("begin probe virtio_scsi init\n")
+}
+
+probe module("virtio").function("virtio_dev_probe") {
+    printf("%s\n", ppfunc())
+}
+
+probe module("virtio_pci").function("vp_get_features").return {
+    printf("%s features:0x%x\n", ppfunc(), $return)
+}
+
+probe module("virtio_pci").function("vp_get").return {
+    printf("%s offset:%d len:%d", ppfunc(), $offset, $len)
+    if ($len == 2) {
+        printf(" buf:0x%x", kernel_short($buf))
+    } else if ($len == 4) {
+        printf(" buf:0x%x", kernel_int($buf))
+    }
+    printf("\n")
+}
+
+probe module("virtio_scsi").statement("virtscsi_probe@drivers/scsi/virtio_scsi.c:969") {
+    printf("%s num_queues:%d num_targets:%d\n", ppfunc(), $num_queues, $num_targets)
+}
+
+probe module("virtio_pci").function("vp_try_to_find_vqs") {
+    printf("%s nvqs:%d use_msix:%d\n", ppfunc(), $nvqs, $use_msix)
+}
+
+probe module("virtio_pci").function("setup_vq@drivers/virtio/virtio_pci_modern.c") {
+    printf("%s in virtio_pci_modern.c index:%d name:%s msix_vec:%d common:%s\n",
+           ppfunc(), $index, kernel_string($name), $msix_vec, $vp_dev->common$)
+}
+
+probe module("virtio_pci").function("setup_vq@drivers/virtio/virtio_pci_modern.c").return {
+    printf("%s return vq:%p name:%s index:%d num_free:%d common:%s\n",
+           ppfunc(), $return, kernel_string($return->name), $return->index, $return->num_free, $vp_dev->common$)
+}
+
+probe module("virtio_ring").function("vring_create_virtqueue") {
+    printf("%s index:%d num:%d\n", ppfunc(), $index, $num)
+}
+
+probe module("virtio_ring").function("vring_alloc_queue") {
+    printf("%s size:%d\n", ppfunc(), $size)
+}

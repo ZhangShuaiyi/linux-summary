@@ -5,16 +5,14 @@ probe begin {
     printf("begin probe vm virtio scsi\n")
 }
 
-probe module("virtio*").function("virtio_*").call,
-    module("virtio*").function("virtscsi_*").call,
-    module("virtio*").function("virtqueue_*").call,
-    module("virtio*").function("vring_*").call {
-    printf("%s -> %s\n", thread_indent(1), ppfunc())
+probe module("virtio*").function("*").call {
+    if (execname() != "sshd") {
+        printf("%s -> %s\n", thread_indent(1), ppfunc())
+    }
 }
 
-probe module("virtio*").function("virtio_*").return,
-    module("virtio*").function("virtscsi_*").return,
-    module("virtio*").function("virtqueue_*").return,
-    module("virtio*").function("vring_*").return {
-    printf("%s <- %s\n", thread_indent(-1), ppfunc())
+probe module("virtio*").function("*").return {
+    if (execname() != "sshd") {
+        printf("%s <- %s\n", thread_indent(-1), ppfunc())
+    }
 }
