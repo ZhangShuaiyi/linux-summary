@@ -1,8 +1,19 @@
 /**
  * kernel version: 4.8.14-300.fc25.x86_64
+ * # stap --all-modules vm_virtio_scsi_init.stp --remote=root@192.168.122.15
  */
 probe begin {
     printf("begin probe virtio_scsi init\n")
+}
+
+probe kernel.function("__request_region") {
+    printf("%s %s\n", ppfunc(), $$parms$$)
+    print_backtrace()
+}
+
+probe kernel.function("ioremap_nocache").return {
+    printf("%s %s return:%p\n", ppfunc(), $$parms$$, $return)
+    print_backtrace()
 }
 
 probe module("virtio").function("virtio_dev_probe") {
@@ -32,13 +43,13 @@ probe module("virtio_pci").function("vp_try_to_find_vqs") {
 }
 
 probe module("virtio_pci").function("setup_vq@drivers/virtio/virtio_pci_modern.c") {
-    printf("%s in virtio_pci_modern.c index:%d name:%s msix_vec:%d common:%s\n",
-           ppfunc(), $index, kernel_string($name), $msix_vec, $vp_dev->common$)
+    printf("%s in virtio_pci_modern.c index:%d name:%s msix_vec:%d common:%p %s\n",
+           ppfunc(), $index, kernel_string($name), $msix_vec, $vp_dev->common, $vp_dev->common$)
 }
 
 probe module("virtio_pci").function("setup_vq@drivers/virtio/virtio_pci_modern.c").return {
-    printf("%s return vq:%p name:%s index:%d num_free:%d common:%s\n",
-           ppfunc(), $return, kernel_string($return->name), $return->index, $return->num_free, $vp_dev->common$)
+    printf("%s return vq:%p name:%s index:%d num_free:%d\n",
+           ppfunc(), $return, kernel_string($return->name), $return->index, $return->num_free)
 }
 
 probe module("virtio_ring").function("vring_create_virtqueue") {

@@ -1,0 +1,9 @@
+probe begin {
+    printf("begin probe qemu virtio-scsi\n")
+}
+
+probe process("/usr/bin/qemu-system-x86_64").function("virtio_*"),
+    process("/usr/bin/qemu-system-x86_64").function("virtqueue_*"),
+    process("/usr/bin/qemu-system-x86_64").function("vring_*") {
+    printf("%s\n", ppfunc())
+}
