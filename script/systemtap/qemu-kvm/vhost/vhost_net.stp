@@ -1,0 +1,19 @@
+probe begin {
+    printf("begin probe vhost_net\n");
+}
+
+probe module("vhost").function("vhost_*") {
+    printf("k: %s\n", ppfunc())
+}
+
+probe module("vhost_net").function("vhost_*") {
+    printf("k: %s\n", ppfunc())
+}
+
+probe process("/usr/bin/qemu-system-x86_64").function("*@hw/net/vhost_net.c"),
+process("/usr/bin/qemu-system-x86_64").function("*@hw/virtio/vhost.c"),
+process("/usr/bin/qemu-system-x86_64").function("*@hw/virtio/vhost-backend.c"),
+process("/usr/bin/qemu-system-x86_64").function("*@hw/net/virtio-net.c") {
+    printf("u: %s\n", ppfunc())
+}
+
