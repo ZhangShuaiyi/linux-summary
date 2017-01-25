@@ -4,15 +4,18 @@
 #include <linux/sched.h>
 #include <linux/highmem.h>
 #include <asm/uaccess.h>
+#include <linux/mmzone.h>
 
 #define DIR "zproc"
 #define MM_NAME "mminfo"
 #define PHYS_VALUE "physvalue"
+#define BUDDY_NAME "node0buddy"
 #define MSG_LEN 32
 
 static struct proc_dir_entry *proc_dir = NULL;
 static struct proc_dir_entry *mminfo = NULL;
 static struct proc_dir_entry *phys_value = NULL;
+static struct proc_dir_entry *buddy_proc = NULL;
 
 static long pid = 0;
 static long phys = 0;
@@ -35,6 +38,9 @@ static int mminfo_show(struct seq_file *m, void *v) {
     mm = task->active_mm;
     seq_printf(m, "map_count:%d pgd:%p pgd pa:0x%llx pgd value:0x%lx\n",
                mm->map_count, mm->pgd, virt_to_phys(mm->pgd), *(unsigned long *)mm->pgd);
+    seq_printf(m, "start_brk:0x%lx brk:0x%lx start_stack:0x%lx\n",
+               mm->start_brk, mm->brk, mm->start_stack);
+    seq_printf(m, "total_vm:0x%lx data_vm:0x%lx\n", mm->total_vm, mm->data_vm);
     return 0;
 }
 
@@ -107,10 +113,44 @@ static const struct file_operations phys_proc_fops = {
     .write = phys_value_write,
 };
 
+static int node0_show(struct seq_file *m, void *v) {
+    pg_data_t *pgdat = NULL;
+    struct zone *zone, *node_zones;
+    int order;
+    unsigned long flags;
+
+    /* pgdat = first_online_pgdat(); */
+    pgdat = NODE_DATA(first_online_node);
+    node_zones = pgdat->node_zones;
+    for (zone = node_zones; zone - node_zones < MAX_NR_ZONES; ++zone) {
+        if (!populated_zone(zone)) {
+            continue;
+        }
+        spin_lock_irqsave(&zone->lock, flags);
+        seq_printf(m, "Node %d, zone %8s ", pgdat->node_id, zone->name);
+        for (order = 0; order < MAX_ORDER; ++order) {
+            seq_printf(m, "%6lu ", zone->free_area[order].nr_free);
+        }
+        seq_putc(m, '\n');
+        spin_unlock_irqrestore(&zone->lock, flags);
+    }
+    return 0;
+}
+
+static int buddy_proc_open(struct inode *inodep, struct file *filep) {
+    return single_open(filep, node0_show, NULL);
+}
+
+static const struct file_operations buddy_proc_fops = {
+    .open = buddy_proc_open,
+    .read = seq_read,
+};
+
 static int __init zproc_init(void) {
     proc_dir = proc_mkdir(DIR, NULL);
     mminfo = proc_create(MM_NAME, 0666, proc_dir, &mminfo_proc_fops);
     phys_value = proc_create(PHYS_VALUE, 0666, proc_dir, &phys_proc_fops);
+    buddy_proc = proc_create(BUDDY_NAME, 0444, proc_dir, &buddy_proc_fops);
     pr_info("<zproc> test proc create\n");
     return 0;
 }
@@ -118,6 +158,7 @@ static int __init zproc_init(void) {
 static void __exit zproc_exit(void) {
     proc_remove(mminfo);
     proc_remove(phys_value);
+    proc_remove(buddy_proc);
     proc_remove(proc_dir);
     pr_info("<zproc> test proc remove\n");
 }
