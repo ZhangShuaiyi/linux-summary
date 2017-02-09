@@ -35,6 +35,7 @@ static ssize_t my_get_info(struct file *filep, char *buf, size_t count, loff_t *
     len += sprintf( buf+len, "\n" );
     len += sprintf( buf+len, "cr3=%lX cr0=%lX\n",cr3,cr0);
     len += sprintf( buf+len, "pgd:0x%lX\n",(unsigned long)mm->pgd);
+    len += sprintf( buf+len, "pgd pa:0x%llX\n", virt_to_phys(mm->pgd));
     len += sprintf( buf+len, "gdtr address:%lX, limit:%X\n", gdtr.address, gdtr.limit);
 //    len += sprintf( buf+len, "cpu_gdt_table address:0x%08lX\n", cpu_gdt_table);
 

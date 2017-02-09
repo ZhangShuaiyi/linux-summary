@@ -1,0 +1,43 @@
+probe begin {
+    printf("begin probe kvm memory\n");
+}
+
+probe module("kvm").function("__kvm_set_memory_region") {
+    printf("%s %s %s\n", execname(), ppfunc(), $mem$);
+}
+
+probe kernel.trace("kvm:kvm_entry") {
+    printf("kvm_entry vcpu_id:%d\n", $vcpu_id);
+}
+
+probe kernel.trace("kvm:kvm_exit") {
+    printf("kvm_exit reason:%d vcpu_id:%d isa:%d\n", $exit_reason, $vcpu->vcpu_id, $isa);
+}
+
+probe module("kvm_intel").function("handle_ept_violation") {
+    printf("%s\n", ppfunc());
+}
+
+probe kernel.trace("kvm:kvm_page_fault") {
+    printf("kvm_page_fault gpa:0x%x exit_qualification:0x%x\n", $fault_address, $error_code);
+}
+
+probe module("kvm").function("kvm_mmu_page_fault") {
+    printf("%s cr2:0x%x error_code:0x%x\n", ppfunc(), $cr2, $error_code);
+}
+
+probe module("kvm").function("tdp_page_fault") {
+    printf("%s gpa:0x%x\n", ppfunc(), $gpa);
+}
+
+probe module("kvm").function("gfn_to_pfn").return {
+    printf("%s gfn:0x%x pfn:0x%x\n", ppfunc(), $gfn, $return);
+}
+
+probe module("kvm").function("hva_to_pfn") {
+    printf("%s addr:0x%x\n", ppfunc(), $addr);
+}
+
+probe module("kvm").function("__direct_map") {
+    printf("%s gfn:0x%x pfn:0x%x level:%d\n", ppfunc(), $gfn, $pfn, $level);
+}
