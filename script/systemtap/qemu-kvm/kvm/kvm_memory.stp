@@ -2,6 +2,15 @@ probe begin {
     printf("begin probe kvm memory\n");
 }
 
+probe module("kvm").function("kvm_arch_create_memslot") {
+    printf("%s slot:%s npages:%d\n",
+           ppfunc(), $slot$, $npages);
+}
+
+probe module("kvm").function("init_kvm_tdp_mmu") {
+    printf("%s\n", ppfunc());
+}
+
 probe module("kvm").function("__kvm_set_memory_region") {
     printf("%s %s %s\n", execname(), ppfunc(), $mem$);
 }
@@ -40,4 +49,14 @@ probe module("kvm").function("hva_to_pfn") {
 
 probe module("kvm").function("__direct_map") {
     printf("%s gfn:0x%x pfn:0x%x level:%d\n", ppfunc(), $gfn, $pfn, $level);
+}
+
+probe module("kvm").function("mmu_set_spte") {
+    printf("%s sptep:0x%x level:%d gfn:0x%x pfn:0x%x\n",
+           ppfunc(), kernel_long($sptep), $level, $gfn, $pfn);
+}
+
+probe module("kvm").function("kvm_mmu_get_page") {
+    printf("%s gfn:0x%x gddr:0x%x level:%d\n",
+           ppfunc(), $gfn, $gaddr, $level);
 }
