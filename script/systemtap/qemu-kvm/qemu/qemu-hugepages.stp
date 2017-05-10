@@ -1,0 +1,18 @@
+probe begin {
+  printf("begin probe qemu backend\n");
+}
+
+probe process("/usr/libexec/qemu-kvm").function("memory_region_init_ram_from_file") {
+  printf("%s name:%s path:%s\n", ppfunc(), user_string($name), user_string($path));
+  print_ubacktrace();
+}
+
+probe process("/usr/libexec/qemu-kvm").function("qemu_fd_getpagesize").return {
+  printf("%s fd:%d pagesize:%d\n", ppfunc(), $fd, $return);
+}
+
+probe kernel.function("hugetlbfs_file_mmap") {
+  printf("%s\n", ppfunc());
+  print_ubacktrace();
+}
+

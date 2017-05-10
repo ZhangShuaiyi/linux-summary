@@ -1,0 +1,12 @@
+probe begin {
+    printf("probe begin qemu\n");
+}
+
+probe process("/root/gitsrc/qemu/x86_64-softmmu/qemu-system-x86_64").statement("main@/root/gitsrc/qemu/vl.c:3104") {
+    printf("optarg:%s\n", user_string($optarg));
+}
+
+probe process("/root/gitsrc/qemu/x86_64-softmmu/qemu-system-x86_64").function("kvm_put_msrs") {
+    printf("%s\n", ppfunc());
+    print_ubacktrace();
+}

@@ -1,0 +1,43 @@
+probe begin {
+    printf("begin probe migrate\n");
+}
+
+probe process("/usr/libexec/qemu-kvm").function("qmp_migrate") {
+    printf("%s uri:%s\n", ppfunc(), user_string($uri));
+    print_ubacktrace();
+}
+
+probe process("/usr/libexec/qemu-kvm").function("fd_start_outgoing_migration") {
+    printf("%s fdname:%s\n", ppfunc(), user_string($fdname));
+}
+
+probe process("/usr/libexec/qemu-kvm").function("migrate_fd_connect") {
+    printf("%s %s\n", ppfunc(), $$parms$);
+}
+
+probe process("/usr/libexec/qemu-kvm").function("migration_bitmap_sync") {
+    printf("%s\n", ppfunc());
+    print_ubacktrace();
+}
+
+probe process("/usr/libexec/qemu-kvm").mark("migration*") {
+    printf("%s\n", pn());
+}
+
+probe process("/usr/libexec/qemu-kvm").mark("migrate_pending") {
+    printf("%s pending_size:%d max_size:%d pend_post:%d pend_nonpost:%d\n",
+            ppfunc(), $arg1, $arg2, $arg3, $arg4);
+}
+
+probe process("/usr/libexec/qemu-kvm").mark("migrate_transferred") {
+    printf("%s transterred_bytes:%d time_spent:%d bandwidth:%d max_size:%d\n",
+            ppfunc(), $arg1, $arg2, $arg3, $arg4);
+}
+
+/*
+probe process("/usr/libexec/qemu-kvm").mark("migration*"),
+process("/usr/libexec/qemu-kvm").mark("migrate_*") {
+    printf("%s\n", pn());
+}
+*/
+
