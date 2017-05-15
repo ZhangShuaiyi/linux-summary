@@ -1,0 +1,345 @@
+
+[root@node1 qemu]# stap --ldd qemu-migrate-default.stp
+begin probe migrate
+qmp_migrate uri:fd:migrate
+ 0x7f9b71b2ee30 : qmp_migrate+0x0/0x2e0 [/usr/libexec/qemu-kvm]
+ 0x7f9b71a61fb2 : qmp_marshal_migrate+0xf2/0x110 [/usr/libexec/qemu-kvm]
+ 0x7f9b719848c5 : handle_qmp_command+0x415/0xb50 [/usr/libexec/qemu-kvm]
+ 0x7f9b71c13998 : json_message_process_token+0xe8/0x160 [/usr/libexec/qemu-kvm]
+ 0x7f9b71c2843b : json_lexer_feed_char+0x14b/0x1b0 [/usr/libexec/qemu-kvm]
+ 0x7f9b71c284fe : json_lexer_feed+0x2e/0x50 [/usr/libexec/qemu-kvm]
+ 0x7f9b71982e7b : monitor_qmp_read+0x1b/0x30 [/usr/libexec/qemu-kvm]
+ 0x7f9b71a57ac1 : tcp_chr_read+0x81/0x190 [/usr/libexec/qemu-kvm]
+ 0x7f9b6897bd7a : g_main_context_dispatch+0x15a/0x2b0 [/usr/lib64/libglib-2.0.so.0.4600.2]
+ 0x7f9b71b85180 : main_loop_wait+0x1b0/0x260 [/usr/libexec/qemu-kvm]
+ 0x7f9b719528df : main+0x3e9f/0x50a0 [/usr/libexec/qemu-kvm]
+ 0x7f9b670b8b35 : __libc_start_main+0xf5/0x1c0 [/usr/lib64/libc-2.17.so]
+ 0x7f9b71954e3c : _start+0x29/0x2d [/usr/libexec/qemu-kvm]
+fd_start_outgoing_migration fdname:migrate
+migrate_fd_connect s={.bandwidth_limit=9223372036853727232, .bytes_xfer=0, .xfer_limit=0, .thread={...}, .cleanup_bh=0x0, .to_dst_file=0x7f9b77206000, .parameters=[...], .state=1, .params={...}, .rp_state={...}, .mbps=?, .total_time=4510499, .downtime=0, .expected_downtime=0, .dirty_pages_rate=0, .dirty_bytes_rate=0, .enabled_capabilities=[...], .xbzrle_cache_size=67108864, .setup_time=0, .dirty_sync_count=0, .postcopy_requests=0, .start_postcopy=0, .postcopy_after_devices=0, .migration_thread_running=0, .src_page_req_mutex=
+process("/usr/libexec/qemu-kvm").mark("savevm_state_header")
+process("/usr/libexec/qemu-kvm").mark("savevm_state_begin")
+enter bitmap_set start:0 nr:164531 map:0x0
+end bitmap_set start:0 nr:164531 map:0xffffffffffffffff
+migration_bitmap_sync
+ 0x7f9b719a47b0 : migration_bitmap_sync+0x0/0x5b0 [/usr/libexec/qemu-kvm]
+ 0x7f9b719a598a : ram_save_setup+0x1ea/0x3b0 [/usr/libexec/qemu-kvm]
+ 0x7f9b719a922d : qemu_savevm_state_begin+0xbd/0x110 [/usr/libexec/qemu-kvm]
+ 0x7f9b71b2e10f : migration_thread+0x9f/0x8c0 [/usr/libexec/qemu-kvm]
+ 0x7f9b6745fdc5 : start_thread+0xc5/0x300 [/usr/lib64/libpthread-2.17.so]
+ 0x7f9b6718e73d : clone+0x6d/0x90 [/usr/lib64/libc-2.17.so]
+process("/usr/libexec/qemu-kvm").mark("migration_bitmap_sync_start")
+process("/usr/libexec/qemu-kvm").mark("migration_bitmap_sync_end")
+process("/usr/libexec/qemu-kvm").mark("migration_thread_setup_complete")
+migrate_pending pending_size:671830016 max_size:0 pend_post:671830016 pend_nonpost:0
+process("/usr/libexec/qemu-kvm").mark("savevm_state_iterate")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+migrate_pending pending_size:665796608 max_size:0 pend_post:665796608 pend_nonpost:0
+process("/usr/libexec/qemu-kvm").mark("savevm_state_iterate")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+migrate_transferred transterred_bytes:12751480 time_spent:144 bandwidth:4680821656496752412 max_size:26565583
+migrate_pending pending_size:651636736 max_size:26565583 pend_post:651636736 pend_nonpost:0
+process("/usr/libexec/qemu-kvm").mark("savevm_state_iterate")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+migrate_pending pending_size:645341184 max_size:26565583 pend_post:645341184 pend_nonpost:0
+process("/usr/libexec/qemu-kvm").mark("savevm_state_iterate")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+migrate_transferred transterred_bytes:11396438 time_spent:104 bandwidth:4682266771441481255 max_size:32874340
+migrate_pending pending_size:515575808 max_size:32874340 pend_post:515575808 pend_nonpost:0
+process("/usr/libexec/qemu-kvm").mark("savevm_state_iterate")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+migrate_pending pending_size:375324672 max_size:32874340 pend_post:375324672 pend_nonpost:0
+process("/usr/libexec/qemu-kvm").mark("savevm_state_iterate")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+migrate_transferred transterred_bytes:12184091 time_spent:111 bandwidth:4682279515535113650 max_size:32929975
+migrate_pending pending_size:369553408 max_size:32929975 pend_post:369553408 pend_nonpost:0
+process("/usr/libexec/qemu-kvm").mark("savevm_state_iterate")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+migrate_pending pending_size:361947136 max_size:32929975 pend_post:361947136 pend_nonpost:0
+process("/usr/libexec/qemu-kvm").mark("savevm_state_iterate")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+migrate_transferred transterred_bytes:15500843 time_spent:115 bandwidth:4683871359881105729 max_size:40436981
+migrate_pending pending_size:354078720 max_size:40436981 pend_post:354078720 pend_nonpost:0
+process("/usr/libexec/qemu-kvm").mark("savevm_state_iterate")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+migrate_pending pending_size:344899584 max_size:40436981 pend_post:344899584 pend_nonpost:0
+process("/usr/libexec/qemu-kvm").mark("savevm_state_iterate")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+migrate_transferred transterred_bytes:16005680 time_spent:113 bandwidth:4684106835645042072 max_size:42492955
+migrate_pending pending_size:338079744 max_size:42492955 pend_post:338079744 pend_nonpost:0
+process("/usr/libexec/qemu-kvm").mark("savevm_state_iterate")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+migrate_pending pending_size:330473472 max_size:42492955 pend_post:330473472 pend_nonpost:0
+process("/usr/libexec/qemu-kvm").mark("savevm_state_iterate")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+migrate_transferred transterred_bytes:15496748 time_spent:138 bandwidth:4682453285773398432 max_size:33688582
+migrate_pending pending_size:322605056 max_size:33688582 pend_post:322605056 pend_nonpost:0
+process("/usr/libexec/qemu-kvm").mark("savevm_state_iterate")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+migrate_pending pending_size:313688064 max_size:33688582 pend_post:313688064 pend_nonpost:0
+process("/usr/libexec/qemu-kvm").mark("savevm_state_iterate")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+migrate_transferred transterred_bytes:17868842 time_spent:114 bandwidth:4684625703505130694 max_size:47023268
+migrate_pending pending_size:304771072 max_size:47023268 pend_post:304771072 pend_nonpost:0
+process("/usr/libexec/qemu-kvm").mark("savevm_state_iterate")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+migrate_pending pending_size:296116224 max_size:47023268 pend_post:296116224 pend_nonpost:0
+process("/usr/libexec/qemu-kvm").mark("savevm_state_iterate")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+migrate_transferred transterred_bytes:17668187 time_spent:118 bandwidth:4684384710149444487 max_size:44919119
+migrate_pending pending_size:286937088 max_size:44919119 pend_post:286937088 pend_nonpost:0
+process("/usr/libexec/qemu-kvm").mark("savevm_state_iterate")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+m
+process("/usr/libexec/qemu-kvm").mark("savevm_state_iterate")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+migrate_transferred transterred_bytes:17992268 time_spent:111 bandwidth:4684809468884133980 max_size:48627751
+migrate_pending pending_size:268840960 max_size:48627751 pend_post:268840960 pend_nonpost:0
+process("/usr/libexec/qemu-kvm").mark("savevm_state_iterate")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+migrate_pending pending_size:260972544 max_size:48627751 pend_post:260972544 pend_nonpost:0
+process("/usr/libexec/qemu-kvm").mark("savevm_state_iterate")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+migrate_transferred transterred_bytes:16276463 time_spent:115 bandwidth:4684103099883479539 max_size:42460338
+migrate_pending pending_size:250744832 max_size:42460338 pend_post:250744832 pend_nonpost:0
+process("/usr/libexec/qemu-kvm").mark("savevm_state_iterate")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+migrate_pending pending_size:242089984 max_size:42460338 pend_post:242089984 pend_nonpost:0
+process("/usr/libexec/qemu-kvm").mark("savevm_state_iterate")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+migrate_transferred transterred_bytes:17631332 time_spent:115 bandwidth:4684507908095330963 max_size:45994779
+migrate_pending pending_size:232910848 max_size:45994779 pend_post:232910848 pend_nonpost:0
+process("/usr/libexec/qemu-kvm").mark("savevm_state_iterate")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+migrate_pending pending_size:224780288 max_size:45994779 pend_post:224780288 pend_nonpost:0
+process("/usr/libexec/qemu-kvm").mark("savevm_state_iterate")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+migrate_transferred transterred_bytes:15717239 time_spent:106 bandwidth:4684334731893674834 max_size:44482751
+migrate_pending pending_size:215863296 max_size:44482751 pend_post:215863296 pend_nonpost:0
+process("/usr/libexec/qemu-kvm").mark("savevm_state_iterate")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+migrate_pending pending_size:207470592 max_size:44482751 pend_post:207470592 pend_nonpost:0
+process("/usr/libexec/qemu-kvm").mark("savevm_state_iterate")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+migrate_transferred transterred_bytes:14870789 time_spent:109 bandwidth:4683927686410108026 max_size:40928777
+migrate_pending pending_size:200126464 max_size:40928777 pend_post:200126464 pend_nonpost:0
+process("/usr/libexec/qemu-kvm").mark("savevm_state_iterate")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+migrate_pending pending_size:191209472 max_size:40928777 pend_post:191209472 pend_nonpost:0
+process("/usr/libexec/qemu-kvm").mark("savevm_state_iterate")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+migrate_transferred transterred_bytes:17242883 time_spent:108 bandwidth:4684725762361927149 max_size:47896897
+migrate_pending pending_size:182030336 max_size:47896897 pend_post:182030336 pend_nonpost:0
+process("/usr/libexec/qemu-kvm").mark("savevm_state_iterate")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+migrate_pending pending_size:173375488 max_size:47896897 pend_post:173375488 pend_nonpost:0
+process("/usr/libexec/qemu-kvm").mark("savevm_state_iterate")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+migrate_transferred transterred_bytes:15689150 time_spent:105 bandwidth:4684374061306672079 max_size:44826142
+migrate_pending pending_size:164720640 max_size:44826142 pend_post:164720640 pend_nonpost:0
+process("/usr/libexec/qemu-kvm").mark("savevm_state_iterate")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+migrate_pending pending_size:157900800 max_size:44826142 pend_post:157900800 pend_nonpost:0
+process("/usr/libexec/qemu-kvm").mark("savevm_state_iterate")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+migrate_transferred transterred_bytes:14991785 time_spent:119 bandwidth:4683393788173084207 max_size:37794415
+migrate_pending pending_size:146100224 max_size:37794415 pend_post:146100224 pend_nonpost:0
+process("/usr/libexec/qemu-kvm").mark("savevm_state_iterate")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+migrate_pending pending_size:138756096 max_size:37794415 pend_post:138756096 pend_nonpost:0
+process("/usr/libexec/qemu-kvm").mark("savevm_state_iterate")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+migrate_transferred transterred_bytes:14884685 time_spent:114 bandwidth:4683708937461278253 max_size:39170223
+migrate_pending pending_size:125906944 max_size:39170223 pend_post:125906944 pend_nonpost:0
+process("/usr/libexec/qemu-kvm").mark("savevm_state_iterate")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+migration_bitmap_sync
+ 0x7f9b719a47b0 : migration_bitmap_sync+0x0/0x5b0 [/usr/libexec/qemu-kvm]
+ 0x7f9b719a4db8 : ram_save_pending+0x58/0xe0 [/usr/libexec/qemu-kvm]
+ 0x7f9b719a97fc : qemu_savevm_state_pending+0x7c/0x90 [/usr/libexec/qemu-kvm]
+ 0x7f9b71b2e1b2 : migration_thread+0x142/0x8c0 [/usr/libexec/qemu-kvm]
+ 0x7f9b6745fdc5 : start_thread+0xc5/0x300 [/usr/lib64/libpthread-2.17.so]
+ 0x7f9b6718e73d : clone+0x6d/0x90 [/usr/lib64/libc-2.17.so]
+process("/usr/libexec/qemu-kvm").mark("migration_bitmap_sync_start")
+process("/usr/libexec/qemu-kvm").mark("migration_bitmap_sync_end")
+migrate_pending pending_size:0 max_size:39170223 pend_post:0 pend_nonpost:0
+process("/usr/libexec/qemu-kvm").mark("migration_thread_low_pending")
+process("/usr/libexec/qemu-kvm").mark("savevm_state_complete_precopy")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+migration_bitmap_sync
+ 0x7f9b719a47b0 : migration_bitmap_sync+0x0/0x5b0 [/usr/libexec/qemu-kvm]
+ 0x7f9b719a4f05 : ram_save_complete+0xc5/0x110 [/usr/libexec/qemu-kvm]
+ 0x7f9b719a9537 : qemu_savevm_state_complete_precopy+0x97/0x2e0 [/usr/libexec/qemu-kvm]
+ 0x7f9b71b2e8f5 : migration_thread+0x885/0x8c0 [/usr/libexec/qemu-kvm]
+ 0x7f9b6745fdc5 : start_thread+0xc5/0x300 [/usr/lib64/libpthread-2.17.so]
+ 0x7f9b6718e73d : clone+0x6d/0x90 [/usr/lib64/libc-2.17.so]
+process("/usr/libexec/qemu-kvm").mark("migration_bitmap_sync_start")
+process("/usr/libexec/qemu-kvm").mark("migration_bitmap_sync_end")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("vmstate_save")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("vmstate_save")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("vmstate_save")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("vmstate_save")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("vmstate_save")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("vmstate_save")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("vmstate_save")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("vmstate_save")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("vmstate_save")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("vmstate_save")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("vmstate_save")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("vmstate_save")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("vmstate_save")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("vmstate_save")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("vmstate_save")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("vmstate_save")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("vmstate_save")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("vmstate_save")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("vmstate_save")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("vmstate_save")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("vmstate_save")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("vmstate_save")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("vmstate_save")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("vmstate_save")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("vmstate_save")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("vmstate_save")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("vmstate_save")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("vmstate_save")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("vmstate_save")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("vmstate_save")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("vmstate_save")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("vmstate_save")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("vmstate_save")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("vmstate_save")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("vmstate_save")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("vmstate_save")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("vmstate_save")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("vmstate_save")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("vmstate_save")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("vmstate_save")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("vmstate_save")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("vmstate_save")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_start")
+process("/usr/libexec/qemu-kvm").mark("vmstate_save")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_end")
+process("/usr/libexec/qemu-kvm").mark("savevm_section_skip")
+process("/usr/libexec/qemu-kvm").mark("migration_thread_after_loop")
+process("/usr/libexec/qemu-kvm").mark("savevm_state_cleanup")

@@ -15,23 +15,41 @@ probe process("/usr/libexec/qemu-kvm").function("migrate_fd_connect") {
     printf("%s %s\n", ppfunc(), $$parms$);
 }
 
+probe process("/usr/libexec/qemu-kvm").function("register_savevm_live"),
+process("/usr/libexec/qemu-kvm").function("vmstate_register_with_alias_id") {
+    printf("%s\n", ppfunc());
+    // print_ubacktrace();
+}
+
+
+// migration bitmap
+
+probe process("/usr/libexec/qemu-kvm").function("bitmap_set") {
+    printf("enter %s start:%d nr:%d map:0x%x\n", ppfunc(), $start, $nr, user_long($map));
+}
+probe process("/usr/libexec/qemu-kvm").function("bitmap_set").return {
+    printf("end %s start:%d nr:%d map:0x%x\n", ppfunc(), $start, $nr, user_long($map));
+}
+
 probe process("/usr/libexec/qemu-kvm").function("migration_bitmap_sync") {
     printf("%s\n", ppfunc());
     print_ubacktrace();
 }
 
-probe process("/usr/libexec/qemu-kvm").mark("migration*") {
+probe process("/usr/libexec/qemu-kvm").mark("migration*"),
+process("/usr/libexec/qemu-kvm").mark("vmstate_*"),
+process("/usr/libexec/qemu-kvm").mark("savevm_*") {
     printf("%s\n", pn());
 }
 
 probe process("/usr/libexec/qemu-kvm").mark("migrate_pending") {
-    printf("%s pending_size:%d max_size:%d pend_post:%d pend_nonpost:%d\n",
-            ppfunc(), $arg1, $arg2, $arg3, $arg4);
+    printf("migrate_pending pending_size:%d max_size:%d pend_post:%d pend_nonpost:%d\n",
+            $arg1, $arg2, $arg3, $arg4);
 }
 
 probe process("/usr/libexec/qemu-kvm").mark("migrate_transferred") {
-    printf("%s transterred_bytes:%d time_spent:%d bandwidth:%d max_size:%d\n",
-            ppfunc(), $arg1, $arg2, $arg3, $arg4);
+    printf("migrate_transferred transterred_bytes:%d time_spent:%d bandwidth:%d max_size:%d\n",
+            $arg1, $arg2, $arg3, $arg4);
 }
 
 /*
