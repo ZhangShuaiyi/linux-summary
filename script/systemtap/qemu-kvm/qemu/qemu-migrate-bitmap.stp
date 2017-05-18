@@ -1,0 +1,47 @@
+global func_times;
+
+probe begin {
+    printf("probe qemu migrate bitmap\n");
+}
+
+probe process("/usr/libexec/qemu-kvm").function("bitmap_set") {
+    printf("enter %s bmap(addr:0x%x value:0x%x) start:0x%x nr:%d\n",
+            ppfunc(), $map, user_long($map), $start, $nr);
+}
+
+probe process("/usr/libexec/qemu-kvm").function("bitmap_set").return {
+    printf("end %s bmap(addr:0x%x value:0x%x) start:0x%x nr:%d\n",
+            ppfunc(), $map, user_long($map), $start, $nr);
+}
+
+probe process("/usr/libexec/qemu-kvm").mark("migration_bitmap_sync_start") {
+    printf("%s\n", pn());
+}
+
+probe process("/usr/libexec/qemu-kvm").mark("migration_bitmap_sync_end") {
+    printf("%s val:%d\n", pn(), $arg1);
+}
+
+probe process("/usr/libexec/qemu-kvm").function("cpu_physical_memory_set_dirty_lebitmap") {
+    printf("%s bitmap(addr:0x%x val:0x%x) start:0x%x pages:%d\n", 
+            ppfunc(), $bitmap, user_long($bitmap), $start, $pages);
+}
+
+probe process("/usr/libexec/qemu-kvm").function("cpu_physical_memory_sync_dirty_bitmap") {
+    printf("%s dest(addr:0x%x val:0x%x) start:0x%x length:%d\n",
+            ppfunc(), $dest, user_long($dest), $start, $length);
+}
+
+probe process("/usr/libexec/qemu-kvm").function("ram_save_page"),
+      process("/usr/libexec/qemu-kvm").function("ram_save_compressed_page"),
+      process("/usr/libexec/qemu-kvm").function("migration_bitmap_clear_dirty"),
+      process("/usr/libexec/qemu-kvm").function("find_next_bit") {
+    func_times[ppfunc()] <<< 1;
+}
+
+probe end {
+    foreach(var in func_times) {
+        printf("\n%s: %d\n", var, @count(func_times[var]));
+    }
+}
+

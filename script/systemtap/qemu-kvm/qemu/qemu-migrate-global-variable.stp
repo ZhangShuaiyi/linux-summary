@@ -1,0 +1,66 @@
+// global func_ubacktrace;
+global ram_list_backtrace;
+global dirty_memory_set;
+
+probe begin {
+    printf("begin probe qemu migrate global variable\n");
+}
+
+probe process("/usr/libexec/qemu-kvm").statement("register_savevm_live@/usr/src/debug/qemu-2.6.0/migration/savevm.c:540"),
+      process("/usr/libexec/qemu-kvm").statement("vmstate_register_with_alias_id@/usr/src/debug/qemu-2.6.0/migration/savevm.c:624") {
+    printf("se:0x%x idstr:%s\t is_ram:%d instance_id:%d section_id:%d %s global_section_id:%d\n",
+            $se, user_string($se->idstr), $se->is_ram, $se->instance_id, $se->section_id, 
+            ppfunc(), @var("savevm_state@migration/savevm.c")->global_section_id);
+    if ($se->is_ram == 1) {
+        print_ubacktrace();
+    }
+    // func_ubacktrace[ppfunc(), sprint_ubacktrace()] <<< 1;
+}
+
+probe process("/usr/libexec/qemu-kvm").statement("ram_block_add@/usr/src/debug/qemu-2.6.0/exec.c:1602") {
+//    printf("===%s\n", ppfunc());
+    printf("==>%s %s offset:0x%x used_length:0x%x max_length:0x%x\n",
+            ppfunc(), user_string($new_block->idstr), $new_block->offset, $new_block->used_length, $new_block->max_length);
+    if (ram_list_backtrace != ubacktrace()) {
+        // print_ubacktrace();
+        ram_list_backtrace = ubacktrace();
+    }
+}
+
+probe process("/usr/libexec/qemu-kvm").function("qemu_ram_set_idstr") {
+    printf("%s addr:0x%x name:%s\n", ppfunc(), $addr, user_string($name));
+}
+
+probe process("/usr/libexec/qemu-kvm").function("cpu_physical_memory_set_dirty_flag") {
+    dirty_memory_set[ppfunc()] <<< 1;
+}
+
+probe process("/usr/libexec/qemu-kvm").statement("cpu_physical_memory_set_dirty_range@/usr/src/debug/qemu-2.6.0/include/exec/ram_addr.h:271") {
+    dirty_memory_set[ppfunc()] <<< 1;
+}
+
+probe process("/usr/libexec/qemu-kvm").function("cpu_physical_memory_set_dirty_lebitmap") {
+    dirty_memory_set[ppfunc()] <<< $pages;
+}
+
+probe process("/usr/libexec/qemu-kvm").function("cpu_physical_memory_sync_dirty_bitmap") {
+    printf("%s start:0x%x length:0x%x\n", ppfunc(), $start, $length);
+}
+
+probe process("/usr/libexec/qemu-kvm").statement("cpu_physical_memory_test_and_clear_dirty@/usr/src/debug/qemu-2.6.0/exec.c:981") {
+    dirty_memory_set[ppfunc()] <<< $length;
+}
+
+probe end {
+    foreach([func] in dirty_memory_set) {
+        printf("%s count:%d\n", func, @count(dirty_memory_set[func]));
+    }
+}
+/*
+probe end {
+    foreach([func, ubacktrace] in func_ubacktrace) {
+        printf("%s count:%d\n", func, @count(func_ubacktrace[func, ubacktrace]));
+        // printf("%s\n", ubacktrace);
+    }
+}
+*/

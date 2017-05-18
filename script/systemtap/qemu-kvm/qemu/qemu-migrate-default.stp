@@ -1,3 +1,5 @@
+global kvm_log_sync_ubacktrace;
+
 probe begin {
     printf("begin probe migrate\n");
 }
@@ -34,6 +36,14 @@ probe process("/usr/libexec/qemu-kvm").function("bitmap_set").return {
 probe process("/usr/libexec/qemu-kvm").function("migration_bitmap_sync") {
     printf("%s\n", ppfunc());
     print_ubacktrace();
+}
+
+probe process("/usr/libexec/qemu-kvm").function("kvm_log_sync") {
+    printf("%s\n", ppfunc());
+    if (kvm_log_sync_ubacktrace != ubacktrace()) {
+        print_ubacktrace();
+        kvm_log_sync_ubacktrace = ubacktrace();
+    }
 }
 
 probe process("/usr/libexec/qemu-kvm").mark("migration*"),

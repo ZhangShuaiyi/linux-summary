@@ -1,0 +1,86 @@
+probe qemu migrate bitmap
+cpu_physical_memory_set_dirty_lebitmap bitmap(addr:0x7fd2ab984800 val:0x0) start:0x200a0000 pages:16384
+cpu_physical_memory_set_dirty_lebitmap bitmap(addr:0x7fd2ab984800 val:0x0) start:0x200a0000 pages:16384
+cpu_physical_memory_set_dirty_lebitmap bitmap(addr:0x7fd2ab984800 val:0x0) start:0x200a0000 pages:16384
+cpu_physical_memory_set_dirty_lebitmap bitmap(addr:0x7fd2ab984800 val:0x0) start:0x200a0000 pages:16384
+cpu_physical_memory_set_dirty_lebitmap bitmap(addr:0x7fd2ab984800 val:0x0) start:0x200a0000 pages:16384
+cpu_physical_memory_set_dirty_lebitmap bitmap(addr:0x7fd2ab984800 val:0x0) start:0x200a0000 pages:16384
+cpu_physical_memory_set_dirty_lebitmap bitmap(addr:0x7fd2ab984800 val:0x0) start:0x200a0000 pages:16384
+cpu_physical_memory_set_dirty_lebitmap bitmap(addr:0x7fd2ab984800 val:0x0) start:0x200a0000 pages:16384
+cpu_physical_memory_set_dirty_lebitmap bitmap(addr:0x7fd2ab983000 val:0x0) start:0x200a0000 pages:16384
+cpu_physical_memory_set_dirty_lebitmap bitmap(addr:0x7fd2ab983000 val:0x0) start:0x200a0000 pages:16384
+cpu_physical_memory_set_dirty_lebitmap bitmap(addr:0x7fd2ab983000 val:0x0) start:0x200a0000 pages:16384
+cpu_physical_memory_set_dirty_lebitmap bitmap(addr:0x7fd2ab983000 val:0x0) start:0x200a0000 pages:16384
+cpu_physical_memory_set_dirty_lebitmap bitmap(addr:0x7fd2ab983000 val:0x0) start:0x200a0000 pages:16384
+cpu_physical_memory_set_dirty_lebitmap bitmap(addr:0x7fd2ab983000 val:0x0) start:0x200a0000 pages:16384
+enter bitmap_set bmap(addr:0x7fd2ac72c000 value:0x0) start:0x0 nr:164531
+end bitmap_set bmap(addr:0x7fd2ac72c000 value:0xffffffffffffffff) start:0x0 nr:164531
+process("/usr/libexec/qemu-kvm").mark("migration_bitmap_sync_start")
+cpu_physical_memory_set_dirty_lebitmap bitmap(addr:0x7fd2ab95fdc0 val:0x0) start:0x0 pages:160
+cpu_physical_memory_set_dirty_lebitmap bitmap(addr:0x7fd2ac283d38 val:0x0) start:0xc0000 pages:10
+cpu_physical_memory_set_dirty_lebitmap bitmap(addr:0x7fd2ac283d38 val:0x0) start:0xca000 pages:3
+cpu_physical_memory_set_dirty_lebitmap bitmap(addr:0x7fd2ac283d38 val:0x0) start:0xcd000 pages:31
+cpu_physical_memory_set_dirty_lebitmap bitmap(addr:0x7fd2ac283d38 val:0x0) start:0xec000 pages:4
+cpu_physical_memory_set_dirty_lebitmap bitmap(addr:0x7fd2ac283d38 val:0x0) start:0xf0000 pages:16
+cpu_physical_memory_set_dirty_lebitmap bitmap(addr:0x7fd2ac026000 val:0x0) start:0x100000 pages:130816
+cpu_physical_memory_set_dirty_lebitmap bitmap(addr:0x7fd2ac406000 val:0xffffffffffffffff) start:0x200a0000 pages:16384
+cpu_physical_memory_set_dirty_lebitmap bitmap(addr:0x7fd2ac406000 val:0x0) start:0x240a2000 pages:16384
+cpu_physical_memory_set_dirty_lebitmap bitmap(addr:0x7fd2ac283d38 val:0x0) start:0x240a0000 pages:2
+cpu_physical_memory_set_dirty_lebitmap bitmap(addr:0x7fd2ac283d38 val:0x0) start:0x20000000 pages:64
+cpu_physical_memory_sync_dirty_bitmap dest(addr:0x7fd2ac72c000 val:0xffffffffffffffff) start:0x0 length:536870912
+cpu_physical_memory_sync_dirty_bitmap dest(addr:0x7fd2ac72c000 val:0xffffffffffffffff) start:0x200a0000 length:67108864
+cpu_physical_memory_sync_dirty_bitmap dest(addr:0x7fd2ac72c000 val:0xffffffffffffffff) start:0x240a2000 length:67108864
+cpu_physical_memory_sync_dirty_bitmap dest(addr:0x7fd2ac72c000 val:0xffffffffffffffff) start:0x280b2000 length:8192
+cpu_physical_memory_sync_dirty_bitmap dest(addr:0x7fd2ac72c000 val:0xffffffffffffffff) start:0x20000000 length:262144
+cpu_physical_memory_sync_dirty_bitmap dest(addr:0x7fd2ac72c000 val:0xffffffffffffffff) start:0x20060000 length:262144
+cpu_physical_memory_sync_dirty_bitmap dest(addr:0x7fd2ac72c000 val:0xffffffffffffffff) start:0x20040000 length:131072
+cpu_physical_memory_sync_dirty_bitmap dest(addr:0x7fd2ac72c000 val:0xffffffffffffffff) start:0x280a2000 length:65536
+cpu_physical_memory_sync_dirty_bitmap dest(addr:0x7fd2ac72c000 val:0xffffffffffffffff) start:0x240a0000 length:8192
+cpu_physical_memory_sync_dirty_bitmap dest(addr:0x7fd2ac72c000 val:0xffffffffffffffff) start:0x282b2000 length:4096
+process("/usr/libexec/qemu-kvm").mark("migration_bitmap_sync_end") val:0
+process("/usr/libexec/qemu-kvm").mark("migration_bitmap_sync_start")
+cpu_physical_memory_set_dirty_lebitmap bitmap(addr:0x7fd2ab961960 val:0x0) start:0x0 pages:160
+cpu_physical_memory_set_dirty_lebitmap bitmap(addr:0x7fd2ac282ff0 val:0x0) start:0xc0000 pages:10
+cpu_physical_memory_set_dirty_lebitmap bitmap(addr:0x7fd2ac282ff0 val:0x0) start:0xca000 pages:3
+cpu_physical_memory_set_dirty_lebitmap bitmap(addr:0x7fd2ac282ff0 val:0x0) start:0xcd000 pages:31
+cpu_physical_memory_set_dirty_lebitmap bitmap(addr:0x7fd2ac282ff0 val:0x0) start:0xec000 pages:4
+cpu_physical_memory_set_dirty_lebitmap bitmap(addr:0x7fd2ac282ff0 val:0x0) start:0xf0000 pages:16
+cpu_physical_memory_set_dirty_lebitmap bitmap(addr:0x7fd2ac026000 val:0x0) start:0x100000 pages:130816
+cpu_physical_memory_set_dirty_lebitmap bitmap(addr:0x7fd2ac406000 val:0x0) start:0x200a0000 pages:16384
+cpu_physical_memory_set_dirty_lebitmap bitmap(addr:0x7fd2ac406000 val:0x0) start:0x240a2000 pages:16384
+cpu_physical_memory_set_dirty_lebitmap bitmap(addr:0x7fd2ac282ff0 val:0x0) start:0x240a0000 pages:2
+cpu_physical_memory_set_dirty_lebitmap bitmap(addr:0x7fd2ac282ff0 val:0x0) start:0x20000000 pages:64
+cpu_physical_memory_sync_dirty_bitmap dest(addr:0x7fd2ac72c000 val:0x0) start:0x0 length:536870912
+cpu_physical_memory_sync_dirty_bitmap dest(addr:0x7fd2ac72c000 val:0x0) start:0x200a0000 length:67108864
+cpu_physical_memory_sync_dirty_bitmap dest(addr:0x7fd2ac72c000 val:0x0) start:0x240a2000 length:67108864
+cpu_physical_memory_sync_dirty_bitmap dest(addr:0x7fd2ac72c000 val:0x0) start:0x280b2000 length:8192
+cpu_physical_memory_sync_dirty_bitmap dest(addr:0x7fd2ac72c000 val:0x0) start:0x20000000 length:262144
+cpu_physical_memory_sync_dirty_bitmap dest(addr:0x7fd2ac72c000 val:0x0) start:0x20060000 length:262144
+cpu_physical_memory_sync_dirty_bitmap dest(addr:0x7fd2ac72c000 val:0x0) start:0x20040000 length:131072
+cpu_physical_memory_sync_dirty_bitmap dest(addr:0x7fd2ac72c000 val:0x0) start:0x280a2000 length:65536
+cpu_physical_memory_sync_dirty_bitmap dest(addr:0x7fd2ac72c000 val:0x0) start:0x240a0000 length:8192
+cpu_physical_memory_sync_dirty_bitmap dest(addr:0x7fd2ac72c000 val:0x0) start:0x282b2000 length:4096
+process("/usr/libexec/qemu-kvm").mark("migration_bitmap_sync_end") val:0
+process("/usr/libexec/qemu-kvm").mark("migration_bitmap_sync_start")
+cpu_physical_memory_set_dirty_lebitmap bitmap(addr:0x7fd2acb7e4c0 val:0x0) start:0x0 pages:160
+cpu_physical_memory_set_dirty_lebitmap bitmap(addr:0x7fd2ac282d10 val:0x0) start:0xc0000 pages:10
+cpu_physical_memory_set_dirty_lebitmap bitmap(addr:0x7fd2ac282d10 val:0x0) start:0xca000 pages:3
+cpu_physical_memory_set_dirty_lebitmap bitmap(addr:0x7fd2ac282d10 val:0x0) start:0xcd000 pages:31
+cpu_physical_memory_set_dirty_lebitmap bitmap(addr:0x7fd2ac282d10 val:0x0) start:0xec000 pages:4
+cpu_physical_memory_set_dirty_lebitmap bitmap(addr:0x7fd2ac282d10 val:0x0) start:0xf0000 pages:16
+cpu_physical_memory_set_dirty_lebitmap bitmap(addr:0x7fd2ac026000 val:0x0) start:0x100000 pages:130816
+cpu_physical_memory_set_dirty_lebitmap bitmap(addr:0x7fd2ac406000 val:0x0) start:0x200a0000 pages:16384
+cpu_physical_memory_set_dirty_lebitmap bitmap(addr:0x7fd2ac406000 val:0x0) start:0x240a2000 pages:16384
+cpu_physical_memory_set_dirty_lebitmap bitmap(addr:0x7fd2ac282d10 val:0x0) start:0x240a0000 pages:2
+cpu_physical_memory_set_dirty_lebitmap bitmap(addr:0x7fd2ac282d10 val:0x0) start:0x20000000 pages:64
+cpu_physical_memory_sync_dirty_bitmap dest(addr:0x7fd2ac72c000 val:0x0) start:0x0 length:536870912
+cpu_physical_memory_sync_dirty_bitmap dest(addr:0x7fd2ac72c000 val:0x0) start:0x200a0000 length:67108864
+cpu_physical_memory_sync_dirty_bitmap dest(addr:0x7fd2ac72c000 val:0x0) start:0x240a2000 length:67108864
+cpu_physical_memory_sync_dirty_bitmap dest(addr:0x7fd2ac72c000 val:0x0) start:0x280b2000 length:8192
+cpu_physical_memory_sync_dirty_bitmap dest(addr:0x7fd2ac72c000 val:0x0) start:0x20000000 length:262144
+cpu_physical_memory_sync_dirty_bitmap dest(addr:0x7fd2ac72c000 val:0x0) start:0x20060000 length:262144
+cpu_physical_memory_sync_dirty_bitmap dest(addr:0x7fd2ac72c000 val:0x0) start:0x20040000 length:131072
+cpu_physical_memory_sync_dirty_bitmap dest(addr:0x7fd2ac72c000 val:0x0) start:0x280a2000 length:65536
+cpu_physical_memory_sync_dirty_bitmap dest(addr:0x7fd2ac72c000 val:0x0) start:0x240a0000 length:8192
+cpu_physical_memory_sync_dirty_bitmap dest(addr:0x7fd2ac72c000 val:0x0) start:0x282b2000 length:4096
+process("/usr/libexec/qemu-kvm").mark("migration_bitmap_sync_end") val:0

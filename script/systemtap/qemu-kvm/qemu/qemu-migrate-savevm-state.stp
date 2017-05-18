@@ -1,0 +1,40 @@
+global clear_dirty_nums = 0;
+
+probe begin {
+    printf("begin probe savevm state\n");
+}
+
+probe process("/usr/libexec/qemu-kvm").function("qemu_savevm_state_begin") {
+    printf("%s\n", ppfunc());
+    print_ubacktrace();
+}
+
+probe process("/usr/libexec/qemu-kvm").statement("qemu_savevm_state_begin@/usr/src/debug/qemu-2.6.0/migration/savevm.c:910") {
+    printf("%s se:0x%x idstr:%s is_ram:%d\n", ppfunc(), $se, user_string($se->idstr), $se->is_ram);
+}
+
+probe process("/usr/libexec/qemu-kvm").statement("qemu_savevm_state_begin@/usr/src/debug/qemu-2.6.0/migration/savevm.c:927") {
+    printf("%s try to call save_live_setup se:0x%x idstr:%s\n", ppfunc(), $se, user_string($se->idstr));
+}
+
+probe process("/usr/libexec/qemu-kvm").function("migration_bitmap_clear_dirty") {
+    clear_dirty_nums += 1;
+}
+
+probe process("/usr/libexec/qemu-kvm").mark("savevm_state_iterate") {
+    printf("%s\n", pn());
+}
+
+probe process("/usr/libexec/qemu-kvm").mark("savevm_section_start"),
+      process("/usr/libexec/qemu-kvm").mark("savevm_section_end") {
+    printf("%s\t idstr:%s section_id:%d\n", pn(), user_string($arg1), $arg2);
+}
+
+probe process("/usr/libexec/qemu-kvm").mark("get_queued_page"),
+      process("/usr/libexec/qemu-kvm").mark("get_queued_page_not_dirty") {
+    printf("%s idstr:%s offset:0x%x ram_addr_abs:0x%x\n", pn(), user_string($arg1), $arg2, $arg3);    
+}
+
+probe end {
+    printf("clear_dirty_nums:%d\n", clear_dirty_nums);
+}
