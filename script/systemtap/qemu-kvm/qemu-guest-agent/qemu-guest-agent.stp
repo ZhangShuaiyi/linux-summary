@@ -1,0 +1,8 @@
+probe begin {
+    printf("begin probe qemu-guest-agent\n");
+}
+
+probe process("/usr/bin/qemu-ga").function("qmp_guest_network_get_interfaces") {
+    printf("%s\n", ppfunc());
+    print_ubacktrace();
+}
