@@ -3,6 +3,7 @@
 #include <linux/seq_file.h>
 #include <linux/sched.h>
 #include <asm/uaccess.h>
+#include <linux/mempolicy.h>
 
 #define DIR "cpu_affinity"
 #define GET "get"
@@ -15,6 +16,7 @@ static long pid = 0;
 
 static int proc_get_show(struct seq_file *m, void *v) {
     struct task_struct *task = NULL;
+    unsigned short mode = 0;
     pr_debug("<cpu_affinity> proc_get_show pid:%ld\n", pid);
     if (!pid) {
         seq_printf(m, "pid:%ld\n", pid);
@@ -28,6 +30,17 @@ static int proc_get_show(struct seq_file *m, void *v) {
     }
     seq_printf(m, "pid:%ld nr_cpus_allowed:%d cpus_allowed:0x%lx\n",
                pid, task->nr_cpus_allowed, *task->cpus_allowed.bits);
+
+    mode = task->mempolicy->mode;
+    switch (mode) {
+    case MPOL_PREFERRED:
+        seq_printf(m, "\t mode:%d nodes:0x%x\n", mode, task->mempolicy->v.preferred_node);
+        break;
+    case MPOL_BIND:
+    case MPOL_INTERLEAVE:
+        seq_printf(m, "\t mode:%d nodes:0x%lx\n", mode, *task->mempolicy->v.nodes.bits);
+        break;
+    }
     return 0;
 }
 
