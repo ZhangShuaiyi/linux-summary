@@ -1,0 +1,19 @@
+global max_total = 0;
+
+probe begin {
+    printf("probe begin block\n");
+}
+
+probe process("/usr/libexec/qemu-kvm").function("bdrv_aligned_pwritev") {
+    total = $offset + $bytes;
+    if (max_total < total) {
+        max_total = total;
+    }
+    printf("%s filename:%s offset:%d bytes:%d total:%d max_total:%d\n", 
+            ppfunc(), user_string($bs->filename), $offset, $bytes, total, max_total);
+}
+
+probe process("/usr/libexec/qemu-kvm").function("bdrv_query_stats") {
+    printf("%s blk:0x%x bs:0x%x\n", ppfunc(), $blk, $bs);
+}
+
