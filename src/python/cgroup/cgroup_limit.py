@@ -24,6 +24,14 @@ def check_cgroup_exist(controller, name):
     out = subprocess.check_output(cmd, shell=True)
     return True if len(out) > 0 else False
 
+def lscgroup_filter(name=None):
+    cmd = 'lscgroup'
+    out = subprocess.check_output(cmd, shell=True)
+    out = out.splitlines()
+    if name is None:
+        return out
+    return filter(lambda x:name in x, out)
+
 def cgcreate(controller, name):
     if check_cgroup_exist(controller, name):
         cgdelete(controller, name)
@@ -126,7 +134,13 @@ def do_cgroup_clear(args):
     """
     clear pid cgroups
     """
-    print(args)
+    assert args.all or args.pid is not None, '-A or -p <pid> must use one'
+    filter_name = 'ctpid%s' % ('' if args.all else args.pid)
+    group_names = lscgroup_filter(filter_name)
+    for group_name in group_names:
+        if 'cpu,cpuacct' in group_name:
+            group_name = group_name.replace(',cpuacct', '')
+        cgdelete_name(group_name)
 
 def get_argparser():
     current_module = sys.modules[__name__]
