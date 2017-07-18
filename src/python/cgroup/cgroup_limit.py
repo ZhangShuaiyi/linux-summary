@@ -2,6 +2,7 @@
 #coding=utf-8
 import sys
 import os
+import re
 import argparse
 import subprocess
 
@@ -110,7 +111,12 @@ def do_cgroup_mem(args):
     if args.mem:
         cgcreate(controller, name)
         mem = args.mem
-        cgset()
+        assert re.match('^[0-9]+[kKmMgG]?$', mem) is not None, '-m <bytes to limit>, can use K,M,G'
+        #
+        cgset('memory.limit_in_bytes', mem, name)
+        cgset('memory.memsw.limit_in_bytes', mem, name)
+        cgclassify(controller, name, args.pid)
+
 
 @add_args('-d', '--dev', help='block device to limit, eg:8:1')
 @add_args('-w', '--write', help='Max write')
