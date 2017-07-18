@@ -1,9 +1,20 @@
 #!/usr/bin/env python
+#coding=utf-8
 import sys
+import os
 import argparse
 import subprocess
 
 PREFIX = 'ctpid'
+
+def get_spids_by_pid(pid):
+    spids = []
+    task_path = '/proc/%s/task' % pid
+    if os.path.isdir(task_path):
+        spids = os.listdir(task_path)
+    else:
+        spids = [pid]
+    return spids
 
 def get_cgroup_name(pid):
     return 'ctpid%s' % pid
@@ -40,6 +51,9 @@ def cgset(key, value, name):
     cmd = 'cgset -r %s=%s %s' % (key, value, name)
     subprocess.call(cmd, shell=True)
 
+def cgclassify(controller, name, pid):
+    cmd = 'cgclassify -g %s:%s %s' % (controller, name, pid)
+    subprocess.call(cmd, shell=True)
 
 def add_args(*args, **kwargs):
     def _decorator(func):
@@ -50,6 +64,7 @@ def add_args(*args, **kwargs):
         return func
     return _decorator
 
+@add_args('-s', '--spid', action='store_true', default=False, help='set for spid')
 @add_args('-u', '--usage', type=int, help='Max cpu usage')
 def do_cgroup_cpu(args):
     """
@@ -61,7 +76,17 @@ def do_cgroup_cpu(args):
         cgdelete(controller, name)
         return
     if args.usage:
+        # 使用cpu.cfs_quota_us设置cpu时间，设置为-1时为不限制，通过和cpu.cfs_period_us比值计算比例
+        # 限制对象为线程
         cgcreate(controller, name)
+        usage = args.usage * 1000
+        cgset('cpu.cfs_quota_us', usage, name)
+        if args.spid:
+            cgclassify(controller, name, args.pid)
+        else:
+            spids = get_spids_by_pid(args.pid)
+            for spid in spids:
+                cgclassify(controller, name, spid)
 
 
 @add_args('-m', '--mem', help='Max mem usage, eg:200M')
@@ -69,7 +94,15 @@ def do_cgroup_mem(args):
     """
     memory limit
     """
-    print(args)
+    controller = 'memory'
+    name = get_cgroup_name(args.pid)
+    if args.clear:
+        cgdelete(controller, name)
+        return
+    if args.mem:
+        cgcreate(controller, name)
+        mem = args.mem
+        cgset()
 
 @add_args('-d', '--dev', help='block device to limit, eg:8:1')
 @add_args('-w', '--write', help='Max write')
