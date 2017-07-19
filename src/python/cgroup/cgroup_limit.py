@@ -8,6 +8,24 @@ import subprocess
 
 PREFIX = 'ctpid'
 
+def unit_to_bytes(data):
+    assert re.match('^[0-9]+[kKmMgG]?$', data) is not None, 'can use K,M,G'
+    us = {
+        'k': 1024,
+        'K': 1024,
+        'm': 1024 * 1024,
+        'M': 1024 * 1024,
+        'g': 1024 * 1024 * 1024,
+        'G': 1024 * 1024 * 1024
+    }
+    v = re.search('[0-9]+', data).group()
+    v = int(v)
+    r = re.search('[kKmMgG]', data)
+    if r is not None:
+        u = r.group()
+        v *= us[u]
+    return v
+
 def get_spids_by_pid(pid):
     spids = []
     task_path = '/proc/%s/task' % pid
@@ -118,14 +136,50 @@ def do_cgroup_mem(args):
         cgclassify(controller, name, args.pid)
 
 
-@add_args('-d', '--dev', help='block device to limit, eg:8:1')
-@add_args('-w', '--write', help='Max write')
-@add_args('-r', '--read', help='Max read')
+@add_args('-d', '--dev', help='block device to limit, eg:/dev/sda')
+@add_args('--wbps', help='Max write bps: eg:--wbps 10M')
+@add_args('--rbps', help='Max read bps: eg:--wbps 10M')
+@add_args('--wiops', type=int, help='Max write iops')
+@add_args('--riops', type=int, help='Max read iops')
 def do_cgroup_blkio(args):
     """
     block device io limit
     """
-    print(args)
+    controller = 'blkio'
+    name = get_cgroup_name(args.pid)
+    if args.clear:
+        cgdelete(controller, name)
+        return
+    assert args.dev is not None, 'Need --dev <block device>'
+    st = os.lstat(args.dev)
+    major = os.major(st.st_rdev)
+    minor = os.minor(st.st_rdev)
+    def wbps_func(bps):
+        value = unit_to_bytes(bps)
+        value = '\"%d:%d %d\"' % (major, minor, value)
+        cgset('blkio.throttle.write_bps_device', value, name)
+    def rbps_func(bps):
+        value = unit_to_bytes(bps)
+        value = '\"%d:%d %d\"' % (major, minor, value)
+        print(value)
+        cgset('blkio.throttle.read_bps_device', value, name)
+    def wiops_func(iops):
+        value = '\"%d:%d %d\"' % (major, minor, iops)
+        cgset('blkio.throttle.write_iops_device', value, name)
+    def riops_func(iops):
+        value = '\"%d:%d %d\"' % (major, minor, iops)
+        cgset('blkio.throttle.read_iops_device', value, name)
+    funcs = {
+        'wbps': wbps_func,
+        'rbps': rbps_func,
+        'wiops': wiops_func,
+        'riops': riops_func
+    }
+    cgcreate(controller, name)
+    for k, v in vars(args).items():
+        if v is not None and funcs.get(k, None) is not None:
+            funcs.get(k, None)(v)
+    cgclassify(controller, name, args.pid)
 
 @add_args('-d', '--dev', help='network interface to limit, eg:eth0')
 def do_cgroup_net(args):

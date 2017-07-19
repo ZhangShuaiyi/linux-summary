@@ -19,3 +19,27 @@ cpu.cfs_quota_us的值为150000。
 ```
 + memory.limit_in_bytes限制物理内存使用量，memory.memsw.limit_in_bytes限制物理内存+Swap空间的总量，若想限制进程
 的内存使用总量为100M，可设置memory.limit_in_bytes和memory.memsw.limit_in_bytes的值为100M，超出时会触发oom
+
+## block io
+
+### device number
+blkio限速时需要知道指定块设备的device number，如/dev/sda设备device number为8:0，可通过一下方法查看:
++ ls -l /dev/sda
+```
+brw-rw----. 1 root disk 8, 0 Jul 19 09:40 /dev/sda
+```
++ stat -c '%t:%T' /dev/sda
+```
+8:0
+```
++ 通过stat函数获取属性后，st_rdev为device number，通过major和minor函数获取MAJOR和MINOR值。
+
+
+### 限速
+参考[Linux cgroup资源隔离各个击破之 - io隔离](https://yq.aliyun.com/articles/54458?spm=5176.8067842.tagmain.29.jmJCdH)
++ blkio.throttle.write_bps_device和blkio.throttle.read_bps_device限制块设备的读写bps
+```
+cgset -r blkio.throttle.read_bps_device='8:0 10485760' <cgroup path>
+```
++ blkio.throttle.write_iops_device和blkio.throttle.read_iops_device限制块设备的读写iops
+
