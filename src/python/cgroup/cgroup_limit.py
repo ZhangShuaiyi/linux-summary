@@ -6,8 +6,6 @@ import re
 import argparse
 import subprocess
 
-PREFIX = 'ctpid'
-
 def unit_to_bytes(data):
     assert re.match('^[0-9]+[kKmMgG]?$', data) is not None, 'can use K,M,G'
     us = {
@@ -34,6 +32,7 @@ def get_spids_by_pid(pid):
     else:
         spids = [pid]
     return spids
+
 
 def get_cgroup_name(pid):
     return 'ctpid%s' % pid
@@ -91,6 +90,86 @@ def add_args(*args, **kwargs):
         return func
     return _decorator
 
+def tc_qdisc_show(dev):
+    cmd = 'tc qdisc show dev %s' % dev
+    out = subprocess.check_output(cmd, shell=True)
+    return out
+
+def tc_class_del(pid, dev, tc_major):
+    cmd = 'tc class show dev %s classid %s:%s' % (dev, tc_major, hex(pid))
+    out = subprocess.check_output(cmd, shell=True)
+    if len(out) > 0:
+        cmd = 'tc class del dev %s classid %s:%s' % (dev, tc_major, hex(pid))
+        subprocess.call(cmd, shell=True)
+
+def tc_qdisc_get_qdisc_and_major(dev):
+    out = tc_qdisc_show(dev)
+    m = re.search('qdisc ([a-z_]+) ([0-9]+): ([a-z]+)', out)
+    assert m is not None
+    qdisc = m.groups()[0]
+    major = m.groups()[1]
+    return (qdisc, major)
+
+def tc_qdisc_add(dev):
+    tc_major = '368'
+    qdisc, major = tc_qdisc_get_qdisc_and_major(dev)
+    if qdisc != 'htb':
+        cmd = 'tc qdisc add dev %s root handle %s: htb' % (dev, tc_major)
+        subprocess.call(cmd, shell=True)
+    else:
+        tc_major = major
+    return tc_major
+
+def tc_qdisc_do_del(pid = None):
+    tc_major = '368'
+    cmd = 'tc qdisc show'
+    out = subprocess.check_output(cmd, shell=True)
+    lines = out.splitlines()
+    for line in lines:
+        r = re.search('qdisc ([a-z]+) ([0-9]+): dev ([a-z0-9]+)', line)
+        if r is not None:
+            qdisc = r.groups()[0]
+            major = r.groups()[1]
+            dev = r.groups()[2]
+            if pid is None:
+                if qdisc == 'htb' and major == tc_major:
+                    cmd = 'tc qdisc del dev %s root' % dev
+                    subprocess.call(cmd, shell=True)
+            elif qdisc == 'htb':
+                tc_class_del(pid, dev, major)
+
+
+def tc_class_add(pid, dev, value, tc_major):
+    tc_class_del(pid, dev, tc_major)
+    cmd = 'tc class add dev %s parent %s: classid %s:%s htb rate %sbps burst %sbit cburst %sbit' % \
+          (dev, tc_major, tc_major, hex(pid), value, value, value)
+    subprocess.call(cmd, shell=True)
+
+def tc_filter_add(dev, tc_major):
+    cmd = 'tc filter show dev %s parent %s:' % (dev, tc_major)
+    out = subprocess.check_output(cmd, shell=True)
+    if 'cgroup' in out:
+        return
+    cmd = 'tc filter add dev %s parent %s: protocol ip prio 1 handle 1: cgroup' % (dev, tc_major)
+    subprocess.call(cmd, shell=True)
+
+def tc_qdisc_class_filter_create(pid, dev, value):
+    tc_major = tc_qdisc_add(dev)
+    tc_class_add(pid, dev, value, tc_major)
+    tc_filter_add(dev, tc_major)
+    return tc_major
+
+def net_cls_tc_create(pid, dev, value):
+    tc_major = tc_qdisc_class_filter_create(pid, dev, value)
+    controller = 'net_cls'
+    name = get_cgroup_name(pid)
+    cgcreate(controller, name)
+    minor = '%04x' % pid
+    classid = '0x%s%s' % (tc_major, minor)
+    cgset('net_cls.classid', classid, name)
+    cgclassify(controller, name, pid)
+
+
 @add_args('-s', '--spid', action='store_true', default=False, help='set for spid')
 @add_args('-u', '--usage', type=int, help='Max cpu usage')
 def do_cgroup_cpu(args):
@@ -130,7 +209,7 @@ def do_cgroup_mem(args):
         cgcreate(controller, name)
         mem = args.mem
         assert re.match('^[0-9]+[kKmMgG]?$', mem) is not None, '-m <bytes to limit>, can use K,M,G'
-        #
+        # 使用memory.limit_in_bytes和memory.memsw.limit_in_bytes限制内存使用
         cgset('memory.limit_in_bytes', mem, name)
         cgset('memory.memsw.limit_in_bytes', mem, name)
         cgclassify(controller, name, args.pid)
@@ -181,12 +260,24 @@ def do_cgroup_blkio(args):
             funcs.get(k, None)(v)
     cgclassify(controller, name, args.pid)
 
-@add_args('-d', '--dev', help='network interface to limit, eg:eth0')
+@add_args('-d', '--dev', required=True, help='network interface to limit, eg:eth0')
+@add_args('-s', '--speed', help='Max speed of bps, eg:10M')
 def do_cgroup_net(args):
     """
     net io limit
     """
-    print(args)
+    controller = 'net_cls'
+    name = get_cgroup_name(args.pid)
+    if args.clear:
+        (qdisc, major) = tc_qdisc_get_qdisc_and_major(args.dev)
+        if qdisc == 'htb':
+            tc_class_del(args.pid, args.dev, major)
+        cgdelete(controller, name)
+        return
+    if args.speed is not None:
+        assert re.match('^[0-9]+[kKmMgG]?$', args.speed) is not None, '-s <bps to limit>, can use K,M,G'
+        net_cls_tc_create(args.pid, args.dev, args.speed)
+
 
 @add_args('-A', '--all', action='store_true', default=False, help='Clear all cgroup')
 @add_args('-p', '--pid', help='Process pid to clear')
@@ -200,14 +291,21 @@ def do_cgroup_clear(args):
     for group_name in group_names:
         if 'cpu,cpuacct' in group_name:
             group_name = group_name.replace(',cpuacct', '')
+        elif 'net_cls,net_prio' in group_name:
+            group_name = group_name.replace(',net_prio', '')
         cgdelete_name(group_name)
+    if args.all:
+        tc_qdisc_do_del()
+        return
+    if args.pid:
+        tc_qdisc_do_del(args.pid)
 
 def get_argparser():
     current_module = sys.modules[__name__]
     parser = argparse.ArgumentParser()
     parent_parser = argparse.ArgumentParser(add_help=False)
     parent_parser.add_argument('-C', '--clear', action='store_true', default=False, help='Clear cgroup')
-    parent_parser.add_argument('-p', '--pid', required=True, help='Process pid')
+    parent_parser.add_argument('-p', '--pid', type=int, required=True, help='Process pid')
     subparsers = parser.add_subparsers()
     for attr in (a for a in dir(current_module) if a.startswith('do_cgroup_')):
         command = attr[10:].replace('_', '-')
