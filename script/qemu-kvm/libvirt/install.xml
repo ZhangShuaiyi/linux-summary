@@ -1,6 +1,6 @@
 <domain type='kvm'>
-  <name>centos7</name>
-  <uuid>3214ee1b-7344-4ccf-8c3e-734ae268aec4</uuid>
+  <name>centos6.8</name>
+  <uuid>3214ee1b-7344-4ccf-8c3e-734ae268aec6</uuid>
   <memory unit='KiB'>8388608</memory>
   <currentMemory unit='KiB'>8388608</currentMemory>
   <vcpu placement='static'>4</vcpu>
@@ -13,13 +13,13 @@
       <entry name='product'>OpenStack Nova</entry>
       <entry name='version'>16.0.0</entry>
       <entry name='serial'>e0effad2-0700-e511-b958-49c5af3ce3fc</entry>
-      <entry name='uuid'>3214ee1b-7344-4ccf-8c3e-734ae268aec4</entry>
+      <entry name='uuid'>3214ee1b-7344-4ccf-8c3e-734ae268aec6</entry>
       <entry name='family'>Virtual Machine</entry>
     </system>
   </sysinfo>
   <os>
     <type arch='x86_64' machine='pc-i440fx-rhel7.3.0'>hvm</type>
-    <boot dev='hd'/>
+    <boot dev='cdrom'/>
     <smbios mode='sysinfo'/>
   </os>
   <features>
@@ -41,19 +41,28 @@
     <emulator>/usr/libexec/qemu-kvm</emulator>
     <disk type='file' device='disk'>
       <driver name='qemu' type='qcow2' cache='none'/>
-      <source file='/var/lib/libvirt/images/CentOS-7-x86_64-GenericCloud-1503.qcow2'/>
+      <source file='/var/lib/libvirt/images/centos6.qcow2'/>
       <target dev='vda' bus='virtio'/>
       <address type='pci' domain='0x0000' bus='0x00' slot='0x04' function='0x0'/>
+    </disk>
+    <disk type='file' device='cdrom'>
+      <driver name='qemu' type='raw'/>
+      <source file='/data/zsy/isos/CentOS-6.8-x86_64-minimal.iso'/>
+      <target dev='hdc' bus='ide'/>
+      <readonly/>
+      <address type='drive' controller='0' bus='1' target='0' unit='0'/>
     </disk>
     <controller type='usb' index='0'>
       <address type='pci' domain='0x0000' bus='0x00' slot='0x01' function='0x2'/>
     </controller>
     <controller type='pci' index='0' model='pci-root'/>
+    <controller type='ide' index='0'>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x01' function='0x1'/>
+    </controller>
     <interface type='network'>
-      <mac address='52:54:00:d1:39:00'/>
+      <mac address='52:54:00:d1:39:06'/>
       <source network='default'/>
       <model type='virtio'/>
-      <driver name='vhost' queues='4'/>
       <address type='pci' domain='0x0000' bus='0x00' slot='0x03' function='0x0'/>
     </interface>
     <input type='tablet' bus='usb'>
